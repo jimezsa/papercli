@@ -10,16 +10,22 @@ var version = "0.1.0"
 
 func main() {
 	if len(os.Args) == 1 {
-		fmt.Println("usage: papercli [global flags] <command> [flags]")
-		os.Exit(1)
+		cmd.PrintHelp(os.Stdout, "", nil)
+		return
 	}
 
-	globals, showVersion, command, args, err := cmd.ParseGlobalArgs(os.Args[1:])
+	globals, showVersion, showHelp, command, args, err := cmd.ParseGlobalArgs(os.Args[1:])
 	if err != nil {
 		fatal(err)
 	}
 	if showVersion {
 		fmt.Println(version)
+		return
+	}
+	if showHelp {
+		if err := cmd.PrintHelp(os.Stdout, command, args); err != nil {
+			fatal(err)
+		}
 		return
 	}
 

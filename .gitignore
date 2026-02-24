@@ -3,6 +3,7 @@
 
 # Local tool binaries
 /.tools/
+/.cache/
 
 # Coverage and test outputs
 *.out

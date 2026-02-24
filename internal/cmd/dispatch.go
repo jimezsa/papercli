@@ -4,48 +4,64 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func ParseGlobalArgs(args []string) (Globals, bool, string, []string, error) {
+func ParseGlobalArgs(args []string) (Globals, bool, bool, string, []string, error) {
 	globals := Globals{
 		Color:   envString("PAPERCLI_COLOR", "auto"),
 		JSON:    envBool("PAPERCLI_JSON", false),
 		Verbose: envBool("PAPERCLI_VERBOSE", false),
 	}
 
-	globalValueFlags := map[string]struct{}{
-		"color": {},
-	}
-	globalFlagTokens, rest := partitionKnownFlags(args, globalValueFlags, map[string]struct{}{
-		"json":    {},
-		"plain":   {},
-		"verbose": {},
-		"version": {},
-		"color":   {},
-	})
+	var showVersion bool
+	var showHelp bool
+	i := 0
+	for i < len(args) {
+		token := args[i]
+		if token == "--" {
+			i++
+			break
+		}
+		if !strings.HasPrefix(token, "-") {
+			break
+		}
 
-	fs := flag.NewFlagSet("papercli", flag.ContinueOnError)
-	fs.SetOutput(io.Discard)
-	fs.StringVar(&globals.Color, "color", globals.Color, "")
-	fs.BoolVar(&globals.JSON, "json", globals.JSON, "")
-	fs.BoolVar(&globals.Plain, "plain", globals.Plain, "")
-	fs.BoolVar(&globals.Verbose, "verbose", globals.Verbose, "")
-	showVersion := false
-	fs.BoolVar(&showVersion, "version", false, "")
-	if err := fs.Parse(globalFlagTokens); err != nil {
-		return Globals{}, false, "", nil, err
+		switch {
+		case token == "--json":
+			globals.JSON = true
+		case token == "--plain":
+			globals.Plain = true
+		case token == "--verbose":
+			globals.Verbose = true
+		case token == "--version":
+			showVersion = true
+		case token == "--help" || token == "-h":
+			showHelp = true
+		case token == "--color":
+			if i+1 >= len(args) {
+				return Globals{}, false, false, "", nil, errors.New("missing value for --color")
+			}
+			i++
+			globals.Color = strings.TrimSpace(args[i])
+		case strings.HasPrefix(token, "--color="):
+			globals.Color = strings.TrimSpace(strings.TrimPrefix(token, "--color="))
+		default:
+			return Globals{}, false, false, "", nil, fmt.Errorf("unknown global flag %q", token)
+		}
+		i++
 	}
+
+	rest := args[i:]
 	if showVersion {
-		return globals, true, "version", nil, nil
+		return globals, true, showHelp, "version", nil, nil
 	}
 	if len(rest) == 0 {
-		return globals, false, "", nil, nil
+		return globals, false, showHelp, "", nil, nil
 	}
-	return globals, false, rest[0], rest[1:], nil
+	return globals, false, showHelp, rest[0], rest[1:], nil
 }
 
 func Dispatch(app *App, command string, args []string) error {
@@ -70,6 +86,10 @@ func Dispatch(app *App, command string, args []string) error {
 }
 
 func dispatchConfig(app *App, args []string) error {
+	if hasHelpFlag(args) {
+		printConfigHelp(app.Stdout)
+		return nil
+	}
 	if len(args) == 0 {
 		return errors.New("config requires a subcommand: init | path")
 	}
@@ -84,12 +104,17 @@ func dispatchConfig(app *App, args []string) error {
 }
 
 func dispatchSearch(app *App, args []string) error {
+	if hasHelpFlag(args) {
+		printSearchHelp(app.Stdout)
+		return nil
+	}
+
 	cmd := SearchCmd{}
 	cmd.Sort = "relevance"
 	cmd.Links = "full"
 
 	fs := flag.NewFlagSet("search", flag.ContinueOnError)
-	fs.SetOutput(io.Discard)
+	fs.SetOutput(app.Stderr)
 	fs.StringVar(&cmd.Provider, "provider", cmd.Provider, "")
 	fs.StringVar(&cmd.Sort, "sort", cmd.Sort, "")
 	fs.IntVar(&cmd.YearFrom, "year-from", cmd.YearFrom, "")
@@ -131,12 +156,17 @@ func dispatchSearch(app *App, args []string) error {
 }
 
 func dispatchAuthor(app *App, args []string) error {
+	if hasHelpFlag(args) {
+		printAuthorHelp(app.Stdout)
+		return nil
+	}
+
 	cmd := AuthorCmd{}
 	cmd.Sort = "relevance"
 	cmd.Links = "full"
 
 	fs := flag.NewFlagSet("author", flag.ContinueOnError)
-	fs.SetOutput(io.Discard)
+	fs.SetOutput(app.Stderr)
 	fs.StringVar(&cmd.Provider, "provider", cmd.Provider, "")
 	fs.StringVar(&cmd.Sort, "sort", cmd.Sort, "")
 	fs.IntVar(&cmd.YearFrom, "year-from", cmd.YearFrom, "")
@@ -178,12 +208,17 @@ func dispatchAuthor(app *App, args []string) error {
 }
 
 func dispatchInfo(app *App, args []string) error {
+	if hasHelpFlag(args) {
+		printInfoHelp(app.Stdout)
+		return nil
+	}
+
 	cmd := InfoCmd{
 		Format: "json",
 		Links:  "full",
 	}
 	fs := flag.NewFlagSet("info", flag.ContinueOnError)
-	fs.SetOutput(io.Discard)
+	fs.SetOutput(app.Stderr)
 	fs.StringVar(&cmd.Provider, "provider", cmd.Provider, "")
 	fs.StringVar(&cmd.Format, "format", cmd.Format, "")
 	fs.StringVar(&cmd.Links, "links", cmd.Links, "")
@@ -210,9 +245,14 @@ func dispatchInfo(app *App, args []string) error {
 }
 
 func dispatchDownload(app *App, args []string) error {
+	if hasHelpFlag(args) {
+		printDownloadHelp(app.Stdout)
+		return nil
+	}
+
 	cmd := DownloadCmd{}
 	fs := flag.NewFlagSet("download", flag.ContinueOnError)
-	fs.SetOutput(io.Discard)
+	fs.SetOutput(app.Stderr)
 	fs.StringVar(&cmd.Provider, "provider", cmd.Provider, "")
 	fs.StringVar(&cmd.Out, "out", cmd.Out, "")
 	fs.StringVar(&cmd.Out, "output", cmd.Out, "")
@@ -237,6 +277,20 @@ func dispatchDownload(app *App, args []string) error {
 }
 
 func dispatchSeen(app *App, args []string) error {
+	if hasHelpFlag(args) {
+		if len(args) > 0 {
+			switch strings.ToLower(strings.TrimSpace(args[0])) {
+			case "diff":
+				printSeenDiffHelp(app.Stdout)
+				return nil
+			case "update":
+				printSeenUpdateHelp(app.Stdout)
+				return nil
+			}
+		}
+		printSeenHelp(app.Stdout)
+		return nil
+	}
 	if len(args) == 0 {
 		return errors.New("seen requires a subcommand: diff | update")
 	}
@@ -251,9 +305,14 @@ func dispatchSeen(app *App, args []string) error {
 }
 
 func dispatchSeenDiff(app *App, args []string) error {
+	if hasHelpFlag(args) {
+		printSeenDiffHelp(app.Stdout)
+		return nil
+	}
+
 	cmd := SeenDiffCmd{}
 	fs := flag.NewFlagSet("seen diff", flag.ContinueOnError)
-	fs.SetOutput(io.Discard)
+	fs.SetOutput(app.Stderr)
 	fs.StringVar(&cmd.New, "new", cmd.New, "")
 	fs.StringVar(&cmd.Seen, "seen", cmd.Seen, "")
 	fs.StringVar(&cmd.Out, "out", cmd.Out, "")
@@ -277,9 +336,14 @@ func dispatchSeenDiff(app *App, args []string) error {
 }
 
 func dispatchSeenUpdate(app *App, args []string) error {
+	if hasHelpFlag(args) {
+		printSeenUpdateHelp(app.Stdout)
+		return nil
+	}
+
 	cmd := SeenUpdateCmd{}
 	fs := flag.NewFlagSet("seen update", flag.ContinueOnError)
-	fs.SetOutput(io.Discard)
+	fs.SetOutput(app.Stderr)
 	fs.StringVar(&cmd.Seen, "seen", cmd.Seen, "")
 	fs.StringVar(&cmd.Input, "input", cmd.Input, "")
 	fs.StringVar(&cmd.Out, "out", cmd.Out, "")
@@ -328,6 +392,15 @@ func envString(key, fallback string) string {
 	return v
 }
 
+func hasHelpFlag(args []string) bool {
+	for _, arg := range args {
+		if arg == "--help" || arg == "-h" {
+			return true
+		}
+	}
+	return false
+}
+
 func reorderFlags(args []string, valueFlags map[string]struct{}) []string {
 	if len(args) == 0 {
 		return nil
@@ -362,38 +435,4 @@ func reorderFlags(args []string, valueFlags map[string]struct{}) []string {
 	out = append(out, flags...)
 	out = append(out, positionals...)
 	return out
-}
-
-func partitionKnownFlags(args []string, valueFlags, knownFlags map[string]struct{}) ([]string, []string) {
-	if len(args) == 0 {
-		return nil, nil
-	}
-	flags := make([]string, 0, len(args))
-	positionals := make([]string, 0, len(args))
-	for i := 0; i < len(args); i++ {
-		token := args[i]
-		if !strings.HasPrefix(token, "--") || token == "--" {
-			positionals = append(positionals, token)
-			continue
-		}
-
-		name := strings.TrimPrefix(token, "--")
-		if idx := strings.Index(name, "="); idx >= 0 {
-			name = name[:idx]
-		}
-		if _, ok := knownFlags[name]; !ok {
-			positionals = append(positionals, token)
-			continue
-		}
-
-		flags = append(flags, token)
-		if _, ok := valueFlags[name]; ok && !strings.Contains(token, "=") && i+1 < len(args) {
-			next := args[i+1]
-			if !strings.HasPrefix(next, "--") || next == "--" {
-				flags = append(flags, next)
-				i++
-			}
-		}
-	}
-	return flags, positionals
 }
