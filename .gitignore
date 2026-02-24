@@ -1,0 +1,12 @@
+# Build artifacts
+/bin/
+
+# Local tool binaries
+/.tools/
+
+# Coverage and test outputs
+*.out
+coverage.*
+
+# macOS
+.DS_Store
