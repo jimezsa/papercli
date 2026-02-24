@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"papercli/internal/config"
-	"papercli/internal/models"
-	"papercli/internal/network"
-	"papercli/internal/provider"
+	"github.com/jimezsa/papercli/internal/config"
+	"github.com/jimezsa/papercli/internal/models"
+	"github.com/jimezsa/papercli/internal/network"
+	"github.com/jimezsa/papercli/internal/provider"
 )
 
 type App struct {

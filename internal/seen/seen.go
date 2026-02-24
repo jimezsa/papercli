@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"papercli/internal/models"
+	"github.com/jimezsa/papercli/internal/models"
 )
 
 type Store struct {

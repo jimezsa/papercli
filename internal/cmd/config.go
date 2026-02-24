@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"papercli/internal/config"
+	"github.com/jimezsa/papercli/internal/config"
 )
 
 type ConfigCmd struct {

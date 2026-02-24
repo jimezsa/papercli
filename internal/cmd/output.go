@@ -5,10 +5,10 @@ import (
 	"os"
 	"strings"
 
-	"papercli/internal/export"
-	"papercli/internal/models"
-	"papercli/internal/seen"
-	"papercli/internal/ui"
+	"github.com/jimezsa/papercli/internal/export"
+	"github.com/jimezsa/papercli/internal/models"
+	"github.com/jimezsa/papercli/internal/seen"
+	"github.com/jimezsa/papercli/internal/ui"
 )
 
 type QueryFlags struct {

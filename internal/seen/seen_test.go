@@ -3,7 +3,7 @@ package seen
 import (
 	"testing"
 
-	"papercli/internal/models"
+	"github.com/jimezsa/papercli/internal/models"
 )
 
 func TestDiff(t *testing.T) {

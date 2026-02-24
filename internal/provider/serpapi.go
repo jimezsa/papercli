@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"papercli/internal/models"
-	"papercli/internal/network"
+	"github.com/jimezsa/papercli/internal/models"
+	"github.com/jimezsa/papercli/internal/network"
 )
 
 const (

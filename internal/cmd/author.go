@@ -1,6 +1,6 @@
 package cmd
 
-import "papercli/internal/models"
+import "github.com/jimezsa/papercli/internal/models"
 
 type AuthorCmd struct {
 	Name string `arg:"" required:"" help:"Author name."`

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"papercli/internal/models"
+	"github.com/jimezsa/papercli/internal/models"
 )
 
 func TestWriteCSV(t *testing.T) {

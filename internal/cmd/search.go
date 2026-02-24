@@ -1,6 +1,6 @@
 package cmd
 
-import "papercli/internal/models"
+import "github.com/jimezsa/papercli/internal/models"
 
 type SearchCmd struct {
 	Query string `arg:"" required:"" help:"Search query."`

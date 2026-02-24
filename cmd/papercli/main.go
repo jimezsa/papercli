@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/jimezsa/papercli/internal/cmd"
 	"os"
-
-	"papercli/internal/cmd"
 )
 
 var version = "0.1.0"

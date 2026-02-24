@@ -7,7 +7,7 @@ import (
 	"io"
 	"strings"
 
-	"papercli/internal/models"
+	"github.com/jimezsa/papercli/internal/models"
 )
 
 func WriteJSON(w io.Writer, papers []models.Paper) error {

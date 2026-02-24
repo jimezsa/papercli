@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"papercli/internal/models"
+	"github.com/jimezsa/papercli/internal/models"
 )
 
 var ErrNotConfigured = errors.New("provider not configured")

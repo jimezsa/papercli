@@ -8,7 +8,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"papercli/internal/models"
+	"github.com/jimezsa/papercli/internal/models"
 )
 
 const (

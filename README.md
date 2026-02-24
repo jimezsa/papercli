@@ -10,3 +10,10 @@ go run ./cmd/papercli search "graph neural networks" --provider arxiv --limit 5
 go run ./cmd/papercli config init
 
 ```
+
+## Build binary with make
+
+```bash
+make build
+./bin/papercli --version
+```

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 
-	"papercli/internal/models"
+	"github.com/jimezsa/papercli/internal/models"
 )
 
 type Manager struct {

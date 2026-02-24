@@ -1,6 +1,6 @@
 package cmd
 
-import "papercli/internal/models"
+import "github.com/jimezsa/papercli/internal/models"
 
 type InfoCmd struct {
 	ID       string `arg:"" required:"" help:"Provider paper identifier."`

@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"papercli/internal/seen"
+	"github.com/jimezsa/papercli/internal/seen"
 )
 
 type SeenCmd struct {
