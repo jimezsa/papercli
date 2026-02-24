@@ -10,7 +10,8 @@ var version = "0.1.0"
 
 func main() {
 	if len(os.Args) == 1 {
-		cmd.PrintHelp(os.Stdout, "", nil)
+		globals, _, _, _, _, _ := cmd.ParseGlobalArgs(nil)
+		_ = cmd.PrintHelp(os.Stdout, "", nil, globals)
 		return
 	}
 
@@ -23,7 +24,7 @@ func main() {
 		return
 	}
 	if showHelp {
-		if err := cmd.PrintHelp(os.Stdout, command, args); err != nil {
+		if err := cmd.PrintHelp(os.Stdout, command, args, globals); err != nil {
 			fatal(err)
 		}
 		return

@@ -9,12 +9,14 @@ import (
 	"text/tabwriter"
 
 	"github.com/jimezsa/papercli/internal/models"
+	"github.com/muesli/termenv"
 )
 
 const (
 	ColorAuto   = "auto"
 	ColorAlways = "always"
 	ColorNever  = "never"
+	LinkColor   = "#87CEEB"
 )
 
 type LinksMode string
@@ -28,46 +30,42 @@ func ColorsEnabled(mode string, forceDisable bool) bool {
 	if forceDisable {
 		return false
 	}
-	if os.Getenv("NO_COLOR") != "" {
+	if _, ok := os.LookupEnv("NO_COLOR"); ok {
 		return false
 	}
 
-	switch strings.ToLower(mode) {
+	switch strings.ToLower(strings.TrimSpace(mode)) {
 	case ColorNever:
 		return false
 	case ColorAlways:
 		return true
 	default:
-		return isTerminal(os.Stdout) && os.Getenv("TERM") != "dumb"
+		return termenv.NewOutput(os.Stdout).ColorProfile() != termenv.Ascii
 	}
 }
 
 func RenderTable(w io.Writer, papers []models.Paper, color bool, links LinksMode) error {
-	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
+	tw := tabwriter.NewWriter(w, 0, 4, 2, ' ', 0)
+	output := termenv.NewOutput(w)
+	hyperlinks := color && isTTY(w)
 	if _, err := fmt.Fprintln(tw, "provider\ttitle\tauthors\tyear\turl"); err != nil {
 		return err
 	}
 
 	for _, paper := range papers {
-		provider := string(paper.Provider)
 		year := "-"
 		if paper.Year > 0 {
 			year = fmt.Sprintf("%d", paper.Year)
 		}
 
-		if color {
-			provider = colorize(provider, "34")
-			year = colorize(year, "37")
-		}
-
 		if _, err := fmt.Fprintf(
 			tw,
 			"%s\t%s\t%s\t%s\t%s\n",
-			provider,
+			string(paper.Provider),
 			strings.TrimSpace(strings.ReplaceAll(paper.Title, "\n", " ")),
 			strings.Join(paper.Authors, ", "),
 			year,
-			displayURL(paper.URL, links),
+			tableURL(paper.URL, output, color, hyperlinks, links),
 		); err != nil {
 			return err
 		}
@@ -75,12 +73,9 @@ func RenderTable(w io.Writer, papers []models.Paper, color bool, links LinksMode
 	return tw.Flush()
 }
 
-func colorize(v, code string) string {
-	return "\x1b[" + code + "m" + v + "\x1b[0m"
-}
-
-func isTerminal(f *os.File) bool {
-	if f == nil {
+func isTTY(w io.Writer) bool {
+	f, ok := w.(*os.File)
+	if !ok || f == nil {
 		return false
 	}
 	info, err := f.Stat()
@@ -91,6 +86,7 @@ func isTerminal(f *os.File) bool {
 }
 
 func RenderTSV(w io.Writer, papers []models.Paper, links LinksMode) error {
+	_ = links
 	for _, paper := range papers {
 		title := strings.TrimSpace(strings.ReplaceAll(paper.Title, "\t", " "))
 		title = strings.ReplaceAll(title, "\n", " ")
@@ -108,7 +104,7 @@ func RenderTSV(w io.Writer, papers []models.Paper, links LinksMode) error {
 			title,
 			authors,
 			year,
-			displayURL(paper.URL, links),
+			paper.URL,
 		); err != nil {
 			return err
 		}
@@ -116,18 +112,51 @@ func RenderTSV(w io.Writer, papers []models.Paper, links LinksMode) error {
 	return nil
 }
 
-func displayURL(raw string, mode LinksMode) string {
-	if mode != LinksShort {
-		return raw
-	}
-	u, err := url.Parse(raw)
-	if err != nil || u.Host == "" {
-		return raw
+func tableURL(raw string, output *termenv.Output, color bool, hyperlinks bool, mode LinksMode) string {
+	url := strings.TrimSpace(raw)
+	if url == "" {
+		return "-"
 	}
 
-	path := strings.Trim(u.Path, "/")
-	if path == "" {
-		return u.Host
+	display := url
+	if mode == LinksShort && hyperlinks {
+		display = shortURLLabel(url)
 	}
-	return u.Host + "/" + path
+
+	display = ColorizeLink(output, color, display)
+	if hyperlinks {
+		display = hyperlink(url, display)
+	}
+	return display
+}
+
+func ColorizeLink(output *termenv.Output, enabled bool, text string) string {
+	if !enabled || output == nil {
+		return text
+	}
+	return output.String(text).Foreground(output.Color(LinkColor)).String()
+}
+
+func hyperlink(url string, text string) string {
+	const esc = "\x1b"
+	return esc + "]8;;" + url + esc + "\\" + text + esc + "]8;;" + esc + "\\"
+}
+
+func shortURLLabel(raw string) string {
+	const maxLen = 60
+	label := strings.TrimSpace(raw)
+	if parsed, err := url.Parse(raw); err == nil {
+		host := strings.TrimPrefix(parsed.Host, "www.")
+		if host != "" {
+			label = host + parsed.Path
+		}
+	}
+	label = strings.TrimSpace(label)
+	if label == "" {
+		label = raw
+	}
+	if len(label) > maxLen {
+		label = label[:maxLen-3] + "..."
+	}
+	return label
 }

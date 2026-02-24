@@ -87,7 +87,7 @@ func Dispatch(app *App, command string, args []string) error {
 
 func dispatchConfig(app *App, args []string) error {
 	if hasHelpFlag(args) {
-		printConfigHelp(app.Stdout)
+		printConfigHelp(app.Stdout, newHelpStyler(app.Stdout, app.Globals))
 		return nil
 	}
 	if len(args) == 0 {
@@ -105,7 +105,7 @@ func dispatchConfig(app *App, args []string) error {
 
 func dispatchSearch(app *App, args []string) error {
 	if hasHelpFlag(args) {
-		printSearchHelp(app.Stdout)
+		printSearchHelp(app.Stdout, newHelpStyler(app.Stdout, app.Globals))
 		return nil
 	}
 
@@ -157,7 +157,7 @@ func dispatchSearch(app *App, args []string) error {
 
 func dispatchAuthor(app *App, args []string) error {
 	if hasHelpFlag(args) {
-		printAuthorHelp(app.Stdout)
+		printAuthorHelp(app.Stdout, newHelpStyler(app.Stdout, app.Globals))
 		return nil
 	}
 
@@ -209,7 +209,7 @@ func dispatchAuthor(app *App, args []string) error {
 
 func dispatchInfo(app *App, args []string) error {
 	if hasHelpFlag(args) {
-		printInfoHelp(app.Stdout)
+		printInfoHelp(app.Stdout, newHelpStyler(app.Stdout, app.Globals))
 		return nil
 	}
 
@@ -246,7 +246,7 @@ func dispatchInfo(app *App, args []string) error {
 
 func dispatchDownload(app *App, args []string) error {
 	if hasHelpFlag(args) {
-		printDownloadHelp(app.Stdout)
+		printDownloadHelp(app.Stdout, newHelpStyler(app.Stdout, app.Globals))
 		return nil
 	}
 
@@ -278,17 +278,18 @@ func dispatchDownload(app *App, args []string) error {
 
 func dispatchSeen(app *App, args []string) error {
 	if hasHelpFlag(args) {
+		style := newHelpStyler(app.Stdout, app.Globals)
 		if len(args) > 0 {
 			switch strings.ToLower(strings.TrimSpace(args[0])) {
 			case "diff":
-				printSeenDiffHelp(app.Stdout)
+				printSeenDiffHelp(app.Stdout, style)
 				return nil
 			case "update":
-				printSeenUpdateHelp(app.Stdout)
+				printSeenUpdateHelp(app.Stdout, style)
 				return nil
 			}
 		}
-		printSeenHelp(app.Stdout)
+		printSeenHelp(app.Stdout, style)
 		return nil
 	}
 	if len(args) == 0 {
@@ -306,7 +307,7 @@ func dispatchSeen(app *App, args []string) error {
 
 func dispatchSeenDiff(app *App, args []string) error {
 	if hasHelpFlag(args) {
-		printSeenDiffHelp(app.Stdout)
+		printSeenDiffHelp(app.Stdout, newHelpStyler(app.Stdout, app.Globals))
 		return nil
 	}
 
@@ -337,7 +338,7 @@ func dispatchSeenDiff(app *App, args []string) error {
 
 func dispatchSeenUpdate(app *App, args []string) error {
 	if hasHelpFlag(args) {
-		printSeenUpdateHelp(app.Stdout)
+		printSeenUpdateHelp(app.Stdout, newHelpStyler(app.Stdout, app.Globals))
 		return nil
 	}
 

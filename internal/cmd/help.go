@@ -4,141 +4,155 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"github.com/jimezsa/papercli/internal/ui"
+	"github.com/muesli/termenv"
 )
 
-func PrintHelp(w io.Writer, command string, args []string) error {
+type helpStyler func(string) string
+
+func PrintHelp(w io.Writer, command string, args []string, globals Globals) error {
+	style := newHelpStyler(w, globals)
 	command = strings.ToLower(strings.TrimSpace(command))
 	switch command {
 	case "":
-		printGlobalHelp(w)
+		printGlobalHelp(w, style)
 		return nil
 	case "version":
-		_, _ = fmt.Fprintln(w, "Usage:")
-		_, _ = fmt.Fprintln(w, "  papercli version")
+		_, _ = fmt.Fprintln(w, style("Usage:"))
+		_, _ = fmt.Fprintf(w, "  %s\n", style("papercli version"))
 		return nil
 	case "config":
-		printConfigHelp(w)
+		printConfigHelp(w, style)
 		return nil
 	case "search":
-		printSearchHelp(w)
+		printSearchHelp(w, style)
 		return nil
 	case "author":
-		printAuthorHelp(w)
+		printAuthorHelp(w, style)
 		return nil
 	case "info":
-		printInfoHelp(w)
+		printInfoHelp(w, style)
 		return nil
 	case "download":
-		printDownloadHelp(w)
+		printDownloadHelp(w, style)
 		return nil
 	case "seen":
 		if len(args) > 0 {
 			switch strings.ToLower(strings.TrimSpace(args[0])) {
 			case "diff":
-				printSeenDiffHelp(w)
+				printSeenDiffHelp(w, style)
 				return nil
 			case "update":
-				printSeenUpdateHelp(w)
+				printSeenUpdateHelp(w, style)
 				return nil
 			}
 		}
-		printSeenHelp(w)
+		printSeenHelp(w, style)
 		return nil
 	default:
 		return fmt.Errorf("unknown command %q", command)
 	}
 }
 
-func printGlobalHelp(w io.Writer) {
-	_, _ = fmt.Fprintln(w, "papercli - search and aggregate academic papers")
-	_, _ = fmt.Fprintln(w)
-	_, _ = fmt.Fprintln(w, "Usage:")
-	_, _ = fmt.Fprintln(w, "  papercli [global flags] <command> [flags]")
-	_, _ = fmt.Fprintln(w)
-	_, _ = fmt.Fprintln(w, "Global flags:")
-	_, _ = fmt.Fprintln(w, "  --color auto|always|never")
-	_, _ = fmt.Fprintln(w, "  --json")
-	_, _ = fmt.Fprintln(w, "  --plain")
-	_, _ = fmt.Fprintln(w, "  --verbose")
-	_, _ = fmt.Fprintln(w, "  --version")
-	_, _ = fmt.Fprintln(w, "  --help, -h")
-	_, _ = fmt.Fprintln(w)
-	_, _ = fmt.Fprintln(w, "Commands:")
-	_, _ = fmt.Fprintln(w, "  version")
-	_, _ = fmt.Fprintln(w, "  config init|path")
-	_, _ = fmt.Fprintln(w, "  search <query>")
-	_, _ = fmt.Fprintln(w, "  author <name>")
-	_, _ = fmt.Fprintln(w, "  info <id>")
-	_, _ = fmt.Fprintln(w, "  download <id>")
-	_, _ = fmt.Fprintln(w, "  seen diff|update")
-	_, _ = fmt.Fprintln(w)
-	_, _ = fmt.Fprintln(w, "Use 'papercli <command> --help' for command-specific options.")
+func newHelpStyler(w io.Writer, globals Globals) helpStyler {
+	enabled := ui.ColorsEnabled(globals.Color, globals.JSON || globals.Plain)
+	output := termenv.NewOutput(w)
+	return func(text string) string {
+		return ui.ColorizeLink(output, enabled, text)
+	}
 }
 
-func printConfigHelp(w io.Writer) {
-	_, _ = fmt.Fprintln(w, "Usage:")
-	_, _ = fmt.Fprintln(w, "  papercli config init")
-	_, _ = fmt.Fprintln(w, "  papercli config path")
-}
-
-func printSearchHelp(w io.Writer) {
-	_, _ = fmt.Fprintln(w, "Usage:")
-	_, _ = fmt.Fprintln(w, "  papercli search <query> [flags]")
+func printGlobalHelp(w io.Writer, style helpStyler) {
+	_, _ = fmt.Fprintln(w, style("papercli - search and aggregate academic papers"))
 	_, _ = fmt.Fprintln(w)
-	_, _ = fmt.Fprintln(w, "Flags:")
-	_, _ = fmt.Fprintln(w, "  --provider arxiv|semantic|scholar|all")
-	_, _ = fmt.Fprintln(w, "  --sort relevance|date|citations")
-	_, _ = fmt.Fprintln(w, "  --year-from <year>")
-	_, _ = fmt.Fprintln(w, "  --year-to <year>")
-	_, _ = fmt.Fprintln(w, "  --limit <n>")
-	_, _ = fmt.Fprintln(w, "  --offset <n>")
-	_, _ = fmt.Fprintln(w, "  --format csv|json|md")
-	_, _ = fmt.Fprintln(w, "  --links short|full")
-	_, _ = fmt.Fprintln(w, "  --seen <path>")
-	_, _ = fmt.Fprintln(w, "  --new-only")
-	_, _ = fmt.Fprintln(w, "  --new-out <path>")
-	_, _ = fmt.Fprintln(w, "  --out, --output <path>")
-}
-
-func printAuthorHelp(w io.Writer) {
-	_, _ = fmt.Fprintln(w, "Usage:")
-	_, _ = fmt.Fprintln(w, "  papercli author <name> [flags]")
+	_, _ = fmt.Fprintln(w, style("Usage:"))
+	_, _ = fmt.Fprintf(w, "  %s [global flags] <command> [flags]\n", style("papercli"))
 	_, _ = fmt.Fprintln(w)
-	_, _ = fmt.Fprintln(w, "Flags are the same as 'papercli search'.")
-}
-
-func printInfoHelp(w io.Writer) {
-	_, _ = fmt.Fprintln(w, "Usage:")
-	_, _ = fmt.Fprintln(w, "  papercli info <id> [flags]")
+	_, _ = fmt.Fprintln(w, style("Global flags:"))
+	_, _ = fmt.Fprintf(w, "  %s auto|always|never\n", style("--color"))
+	_, _ = fmt.Fprintf(w, "  %s\n", style("--json"))
+	_, _ = fmt.Fprintf(w, "  %s\n", style("--plain"))
+	_, _ = fmt.Fprintf(w, "  %s\n", style("--verbose"))
+	_, _ = fmt.Fprintf(w, "  %s\n", style("--version"))
+	_, _ = fmt.Fprintf(w, "  %s\n", style("--help, -h"))
 	_, _ = fmt.Fprintln(w)
-	_, _ = fmt.Fprintln(w, "Flags:")
-	_, _ = fmt.Fprintln(w, "  --provider arxiv|semantic|scholar|all")
-	_, _ = fmt.Fprintln(w, "  --format csv|json|md")
-	_, _ = fmt.Fprintln(w, "  --links short|full")
-	_, _ = fmt.Fprintln(w, "  --out, --output <path>")
-}
-
-func printDownloadHelp(w io.Writer) {
-	_, _ = fmt.Fprintln(w, "Usage:")
-	_, _ = fmt.Fprintln(w, "  papercli download <id> [flags]")
+	_, _ = fmt.Fprintln(w, style("Commands:"))
+	_, _ = fmt.Fprintf(w, "  %s\n", style("version"))
+	_, _ = fmt.Fprintf(w, "  %s init|path\n", style("config"))
+	_, _ = fmt.Fprintf(w, "  %s <query>\n", style("search"))
+	_, _ = fmt.Fprintf(w, "  %s <name>\n", style("author"))
+	_, _ = fmt.Fprintf(w, "  %s <id>\n", style("info"))
+	_, _ = fmt.Fprintf(w, "  %s <id>\n", style("download"))
+	_, _ = fmt.Fprintf(w, "  %s diff|update\n", style("seen"))
 	_, _ = fmt.Fprintln(w)
-	_, _ = fmt.Fprintln(w, "Flags:")
-	_, _ = fmt.Fprintln(w, "  --provider arxiv|semantic|scholar|all")
-	_, _ = fmt.Fprintln(w, "  --out, --output, --file <path>")
+	_, _ = fmt.Fprintf(w, "Use '%s <command> %s' for command-specific options.\n", style("papercli"), style("--help"))
 }
 
-func printSeenHelp(w io.Writer) {
-	_, _ = fmt.Fprintln(w, "Usage:")
-	_, _ = fmt.Fprintln(w, "  papercli seen diff --new A.json --seen B.json --out C.json [--stats]")
-	_, _ = fmt.Fprintln(w, "  papercli seen update --seen B.json --input C.json --out B.json [--stats]")
+func printConfigHelp(w io.Writer, style helpStyler) {
+	_, _ = fmt.Fprintln(w, style("Usage:"))
+	_, _ = fmt.Fprintf(w, "  %s config init\n", style("papercli"))
+	_, _ = fmt.Fprintf(w, "  %s config path\n", style("papercli"))
 }
 
-func printSeenDiffHelp(w io.Writer) {
-	_, _ = fmt.Fprintln(w, "Usage:")
-	_, _ = fmt.Fprintln(w, "  papercli seen diff --new A.json --seen B.json --out C.json [--stats]")
+func printSearchHelp(w io.Writer, style helpStyler) {
+	_, _ = fmt.Fprintln(w, style("Usage:"))
+	_, _ = fmt.Fprintf(w, "  %s search <query> [flags]\n", style("papercli"))
+	_, _ = fmt.Fprintln(w)
+	_, _ = fmt.Fprintln(w, style("Flags:"))
+	_, _ = fmt.Fprintf(w, "  %s arxiv|semantic|scholar|all\n", style("--provider"))
+	_, _ = fmt.Fprintf(w, "  %s relevance|date|citations\n", style("--sort"))
+	_, _ = fmt.Fprintf(w, "  %s <year>\n", style("--year-from"))
+	_, _ = fmt.Fprintf(w, "  %s <year>\n", style("--year-to"))
+	_, _ = fmt.Fprintf(w, "  %s <n>\n", style("--limit"))
+	_, _ = fmt.Fprintf(w, "  %s <n>\n", style("--offset"))
+	_, _ = fmt.Fprintf(w, "  %s csv|json|md\n", style("--format"))
+	_, _ = fmt.Fprintf(w, "  %s short|full\n", style("--links"))
+	_, _ = fmt.Fprintf(w, "  %s <path>\n", style("--seen"))
+	_, _ = fmt.Fprintf(w, "  %s\n", style("--new-only"))
+	_, _ = fmt.Fprintf(w, "  %s <path>\n", style("--new-out"))
+	_, _ = fmt.Fprintf(w, "  %s <path>\n", style("--out, --output"))
 }
 
-func printSeenUpdateHelp(w io.Writer) {
-	_, _ = fmt.Fprintln(w, "Usage:")
-	_, _ = fmt.Fprintln(w, "  papercli seen update --seen B.json --input C.json --out B.json [--stats]")
+func printAuthorHelp(w io.Writer, style helpStyler) {
+	_, _ = fmt.Fprintln(w, style("Usage:"))
+	_, _ = fmt.Fprintf(w, "  %s author <name> [flags]\n", style("papercli"))
+	_, _ = fmt.Fprintln(w)
+	_, _ = fmt.Fprintf(w, "Flags are the same as '%s search'.\n", style("papercli"))
+}
+
+func printInfoHelp(w io.Writer, style helpStyler) {
+	_, _ = fmt.Fprintln(w, style("Usage:"))
+	_, _ = fmt.Fprintf(w, "  %s info <id> [flags]\n", style("papercli"))
+	_, _ = fmt.Fprintln(w)
+	_, _ = fmt.Fprintln(w, style("Flags:"))
+	_, _ = fmt.Fprintf(w, "  %s arxiv|semantic|scholar|all\n", style("--provider"))
+	_, _ = fmt.Fprintf(w, "  %s csv|json|md\n", style("--format"))
+	_, _ = fmt.Fprintf(w, "  %s short|full\n", style("--links"))
+	_, _ = fmt.Fprintf(w, "  %s <path>\n", style("--out, --output"))
+}
+
+func printDownloadHelp(w io.Writer, style helpStyler) {
+	_, _ = fmt.Fprintln(w, style("Usage:"))
+	_, _ = fmt.Fprintf(w, "  %s download <id> [flags]\n", style("papercli"))
+	_, _ = fmt.Fprintln(w)
+	_, _ = fmt.Fprintln(w, style("Flags:"))
+	_, _ = fmt.Fprintf(w, "  %s arxiv|semantic|scholar|all\n", style("--provider"))
+	_, _ = fmt.Fprintf(w, "  %s <path>\n", style("--out, --output, --file"))
+}
+
+func printSeenHelp(w io.Writer, style helpStyler) {
+	_, _ = fmt.Fprintln(w, style("Usage:"))
+	_, _ = fmt.Fprintf(w, "  %s seen diff %s A.json %s B.json %s C.json [%s]\n", style("papercli"), style("--new"), style("--seen"), style("--out"), style("--stats"))
+	_, _ = fmt.Fprintf(w, "  %s seen update %s B.json %s C.json %s B.json [%s]\n", style("papercli"), style("--seen"), style("--input"), style("--out"), style("--stats"))
+}
+
+func printSeenDiffHelp(w io.Writer, style helpStyler) {
+	_, _ = fmt.Fprintln(w, style("Usage:"))
+	_, _ = fmt.Fprintf(w, "  %s seen diff %s A.json %s B.json %s C.json [%s]\n", style("papercli"), style("--new"), style("--seen"), style("--out"), style("--stats"))
+}
+
+func printSeenUpdateHelp(w io.Writer, style helpStyler) {
+	_, _ = fmt.Fprintln(w, style("Usage:"))
+	_, _ = fmt.Fprintf(w, "  %s seen update %s B.json %s C.json %s B.json [%s]\n", style("papercli"), style("--seen"), style("--input"), style("--out"), style("--stats"))
 }

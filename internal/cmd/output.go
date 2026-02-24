@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/jimezsa/papercli/internal/models"
 	"github.com/jimezsa/papercli/internal/seen"
 	"github.com/jimezsa/papercli/internal/ui"
+	"github.com/muesli/termenv"
 )
 
 type QueryFlags struct {
@@ -84,9 +86,16 @@ func (a *App) RenderPapers(papers []models.Paper, flags QueryFlags) error {
 		if flags.Out != "" {
 			return export.WriteCSV(out, papers)
 		}
+		if !isTTY(out) {
+			return export.WriteCSV(out, papers)
+		}
 		color := ui.ColorsEnabled(a.Globals.Color, a.Globals.JSON || a.Globals.Plain)
 		return ui.RenderTable(out, papers, color, linksMode)
 	default:
 		return fmt.Errorf("unsupported format %q", flags.Format)
 	}
+}
+
+func isTTY(out io.Writer) bool {
+	return termenv.NewOutput(out).ColorProfile() != termenv.Ascii
 }
