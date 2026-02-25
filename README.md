@@ -1,4 +1,8 @@
-# papercli
+# 📄 papercli
+
+<p align="center">
+  <img src="docs/assets/papercli.png" alt="papercli banner" width="640"/>
+</p>
 
 CLI for searching academic papers across arXiv, Semantic Scholar, and Google Scholar (via SerpApi).
 
@@ -9,17 +13,6 @@ CLI for searching academic papers across arXiv, Semantic Scholar, and Google Sch
 ```bash
 git clone https://github.com/<your-user>/papercli.git
 cd papercli
-```
-
-### Option 2: Download ZIP
-
-1. Download the repository as a ZIP from GitHub.
-2. Extract it.
-3. Open a terminal in the extracted `papercli` folder.
-
-## Build and run with `make`
-
-```bash
 make build
 cp ./bin/papercli ./papercli
 ./papercli --version
