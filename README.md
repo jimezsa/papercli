@@ -1,4 +1,4 @@
-# 📄 papercli
+# 📚 papercli — Scientific papers from your terminal
 
 <p align="center">
   <img src="docs/assets/papercli.png" alt="papercli banner" width="640"/>
