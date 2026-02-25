@@ -36,3 +36,18 @@ cp ./bin/papercli ./papercli
   --format md \
   --out rag-papers.md
 ```
+
+## More examples
+
+```bash
+# Find papers by author
+./papercli author "Yoshua Bengio" \
+  --provider semantic \
+  --sort citations \
+  --limit 10
+
+# Download a paper PDF by ID
+./papercli download "1706.03762" \
+  --provider arxiv \
+  --out attention-is-all-you-need.pdf
+```
