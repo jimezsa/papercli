@@ -51,3 +51,7 @@ cp ./bin/papercli ./papercli
   --provider arxiv \
   --out attention-is-all-you-need.pdf
 ```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
