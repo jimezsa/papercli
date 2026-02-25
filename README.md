@@ -2,39 +2,44 @@
 
 CLI for searching academic papers across arXiv, Semantic Scholar, and Google Scholar (via SerpApi).
 
-## Quick start
+## Get the repository
+
+### Option 1: Clone with git
 
 ```bash
-go run ./cmd/papercli --version
-go run ./cmd/papercli search "graph neural networks" --provider arxiv --limit 5
-go run ./cmd/papercli config init
+git clone https://github.com/<your-user>/papercli.git
+cd papercli
+```
+
+### Option 2: Download ZIP
+
+1. Download the repository as a ZIP from GitHub.
+2. Extract it.
+3. Open a terminal in the extracted `papercli` folder.
+
+## Build and run with `make`
+
+```bash
+make build
+cp ./bin/papercli ./papercli
+./papercli --version
 ```
 
 ## Example usage
 
 ```bash
-# 1) Initialize config (creates default config file)
-go run ./cmd/papercli config init
+# Initialize config
+./papercli config init
 
-# 2) Search recent papers from Semantic Scholar and save as Markdown
-go run ./cmd/papercli search "retrieval augmented generation" \
+# Search papers
+./papercli search "graph neural networks" --provider arxiv --limit 5
+
+# Save results to Markdown
+./papercli search "retrieval augmented generation" \
   --provider semantic \
   --year-from 2023 \
   --sort date \
   --limit 10 \
   --format md \
   --out rag-papers.md
-
-# 3) Show only new papers compared with your seen database
-go run ./cmd/papercli search "retrieval augmented generation" \
-  --provider semantic \
-  --seen .papercli-seen.json \
-  --new-only
-```
-
-## Build binary with make
-
-```bash
-make build
-./bin/papercli --version
 ```
