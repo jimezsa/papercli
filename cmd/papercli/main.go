@@ -6,7 +6,11 @@ import (
 	"os"
 )
 
-var version = "0.1.0"
+var (
+	version = "dev"
+	commit  = ""
+	date    = ""
+)
 
 func main() {
 	if len(os.Args) == 1 {
@@ -20,7 +24,7 @@ func main() {
 		fatal(err)
 	}
 	if showVersion {
-		fmt.Println(version)
+		fmt.Println(buildVersion())
 		return
 	}
 	if showHelp {
@@ -30,7 +34,7 @@ func main() {
 		return
 	}
 
-	app, err := cmd.NewApp(version, globals, os.Stdout, os.Stderr)
+	app, err := cmd.NewApp(buildVersion(), globals, os.Stdout, os.Stderr)
 	if err != nil {
 		fatal(err)
 	}
@@ -45,4 +49,17 @@ func main() {
 func fatal(err error) {
 	fmt.Fprintln(os.Stderr, "error:", err)
 	os.Exit(1)
+}
+
+func buildVersion() string {
+	if commit == "" && date == "" {
+		return version
+	}
+	if commit == "" {
+		return fmt.Sprintf("%s (%s)", version, date)
+	}
+	if date == "" {
+		return fmt.Sprintf("%s (%s)", version, commit)
+	}
+	return fmt.Sprintf("%s (%s, %s)", version, commit, date)
 }
