@@ -67,7 +67,6 @@ func (c *Client) Do(ctx context.Context, req *http.Request, timeout time.Duratio
 		}
 
 		resp, err := c.httpClient.Do(attemptReq)
-
 		if err != nil {
 			cancel()
 			lastErr = err

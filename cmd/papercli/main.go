@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/jimezsa/papercli/internal/cmd"
 	"os"
+
+	"github.com/jimezsa/papercli/internal/cmd"
 )
 
 var (

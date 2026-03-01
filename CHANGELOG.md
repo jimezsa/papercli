@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.1] - 2026-03-01
+
+### Fixed
+
+- Fixed `make fmt-check` to ignore Go files in local `.cache/` so CI format checks run only on repository source files
+
 ## [0.1.0] - 2026-03-01
 
 Initial public release of `papercli` CLI for searching academic papers across arXiv, Semantic Scholar, and Google Scholar (via SerpApi).

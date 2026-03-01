@@ -35,14 +35,13 @@ func (a *App) RenderPapers(papers []models.Paper, flags QueryFlags) error {
 		}
 	}
 
-	unseen := papers
 	if flags.Seen != "" {
 		store, err := seen.Load(flags.Seen)
 		if err != nil {
 			return err
 		}
 		set := seen.ToSet(store)
-		unseen = seen.Diff(papers, set)
+		unseen := seen.Diff(papers, set)
 		if flags.NewOut != "" {
 			if err := seen.SavePapers(flags.NewOut, unseen); err != nil {
 				return err

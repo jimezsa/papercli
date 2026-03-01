@@ -20,7 +20,7 @@ endif
 
 .DEFAULT_GOAL := build
 
-GOFILES := $(shell find . -name '*.go' -not -path './.tools/*' -not -path './vendor/*')
+GOFILES := $(shell find . -name '*.go' -not -path './.tools/*' -not -path './.cache/*' -not -path './vendor/*')
 
 .PHONY: build clean tools fmt fmt-check lint test run
 
