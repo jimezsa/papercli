@@ -53,7 +53,7 @@ func CachePath() (string, error) {
 	return filepath.Join(dir, cacheFile), nil
 }
 
-func InitFile() (string, error) {
+func InitFile(force bool) (string, error) {
 	dir, err := Dir()
 	if err != nil {
 		return "", err
@@ -63,6 +63,14 @@ func InitFile() (string, error) {
 	}
 
 	path := filepath.Join(dir, configFile)
+	if !force {
+		if _, err := os.Stat(path); err == nil {
+			return "", fmt.Errorf("config already exists at %q (use --force to overwrite)", path)
+		} else if !errors.Is(err, os.ErrNotExist) {
+			return "", fmt.Errorf("stat config %q: %w", path, err)
+		}
+	}
+
 	cfg := Default()
 
 	data, err := json.MarshalIndent(cfg, "", "  ")

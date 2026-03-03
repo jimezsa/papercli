@@ -11,10 +11,12 @@ type ConfigCmd struct {
 	Path PathConfigCmd `cmd:"" help:"Print config file path." name:"path"`
 }
 
-type InitConfigCmd struct{}
+type InitConfigCmd struct {
+	Force bool `name:"force" help:"Overwrite existing config file if present."`
+}
 
 func (c *InitConfigCmd) Run(app *App) error {
-	path, err := config.InitFile()
+	path, err := config.InitFile(c.Force)
 	if err != nil {
 		return err
 	}

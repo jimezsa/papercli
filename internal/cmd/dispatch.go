@@ -13,19 +13,17 @@ func ParseGlobalArgs(args []string) (Globals, bool, bool, string, []string, erro
 	globals := Globals{
 		Color:   envString("PAPERCLI_COLOR", "auto"),
 		JSON:    envBool("PAPERCLI_JSON", false),
+		Plain:   envBool("PAPERCLI_PLAIN", false),
 		Verbose: envBool("PAPERCLI_VERBOSE", false),
 	}
 
 	var showVersion bool
 	var showHelp bool
-	i := 0
-	for i < len(args) {
+	rest := make([]string, 0, len(args))
+	for i := 0; i < len(args); i++ {
 		token := args[i]
 		if token == "--" {
-			i++
-			break
-		}
-		if !strings.HasPrefix(token, "-") {
+			rest = append(rest, args[i+1:]...)
 			break
 		}
 
@@ -49,12 +47,17 @@ func ParseGlobalArgs(args []string) (Globals, bool, bool, string, []string, erro
 		case strings.HasPrefix(token, "--color="):
 			globals.Color = strings.TrimSpace(strings.TrimPrefix(token, "--color="))
 		default:
-			return Globals{}, false, false, "", nil, fmt.Errorf("unknown global flag %q", token)
+			rest = append(rest, token)
 		}
-		i++
 	}
 
-	rest := args[i:]
+	if err := validateColorMode(globals.Color); err != nil {
+		return Globals{}, false, false, "", nil, err
+	}
+	if globals.JSON && globals.Plain {
+		return Globals{}, false, false, "", nil, errors.New("cannot use --json and --plain together")
+	}
+
 	if showVersion {
 		return globals, true, showHelp, "version", nil, nil
 	}
@@ -95,8 +98,21 @@ func dispatchConfig(app *App, args []string) error {
 	}
 	switch args[0] {
 	case "init":
-		return (&InitConfigCmd{}).Run(app)
+		cmd := InitConfigCmd{}
+		fs := flag.NewFlagSet("config init", flag.ContinueOnError)
+		fs.SetOutput(app.Stderr)
+		fs.BoolVar(&cmd.Force, "force", cmd.Force, "")
+		if err := fs.Parse(args[1:]); err != nil {
+			return err
+		}
+		if len(fs.Args()) > 0 {
+			return errors.New("config init does not accept positional arguments")
+		}
+		return cmd.Run(app)
 	case "path":
+		if len(args) > 1 {
+			return errors.New("config path does not accept arguments")
+		}
 		return (&PathConfigCmd{}).Run(app)
 	default:
 		return fmt.Errorf("unknown config subcommand %q", args[0])
@@ -151,6 +167,9 @@ func dispatchSearch(app *App, args []string) error {
 	if query == "" {
 		return errors.New("search requires <query>")
 	}
+	if err := validateSeenFlags(cmd.Seen, cmd.NewOnly, cmd.NewOut); err != nil {
+		return err
+	}
 	cmd.Query = query
 	return cmd.Run(app)
 }
@@ -202,6 +221,9 @@ func dispatchAuthor(app *App, args []string) error {
 	name = strings.TrimSpace(name)
 	if name == "" {
 		return errors.New("author requires <name>")
+	}
+	if err := validateSeenFlags(cmd.Seen, cmd.NewOnly, cmd.NewOut); err != nil {
+		return err
 	}
 	cmd.Name = name
 	return cmd.Run(app)
@@ -400,6 +422,22 @@ func hasHelpFlag(args []string) bool {
 		}
 	}
 	return false
+}
+
+func validateSeenFlags(seen string, newOnly bool, newOut string) error {
+	if (newOnly || strings.TrimSpace(newOut) != "") && strings.TrimSpace(seen) == "" {
+		return errors.New("--new-only and --new-out require --seen")
+	}
+	return nil
+}
+
+func validateColorMode(v string) error {
+	switch strings.ToLower(strings.TrimSpace(v)) {
+	case "auto", "always", "never":
+		return nil
+	default:
+		return fmt.Errorf("invalid value for --color %q (expected auto|always|never)", v)
+	}
 }
 
 func reorderFlags(args []string, valueFlags map[string]struct{}) []string {

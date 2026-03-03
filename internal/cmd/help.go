@@ -91,7 +91,7 @@ func printGlobalHelp(w io.Writer, style helpStyler) {
 
 func printConfigHelp(w io.Writer, style helpStyler) {
 	_, _ = fmt.Fprintln(w, style("Usage:"))
-	_, _ = fmt.Fprintf(w, "  %s config init\n", style("papercli"))
+	_, _ = fmt.Fprintf(w, "  %s config init [%s]\n", style("papercli"), style("--force"))
 	_, _ = fmt.Fprintf(w, "  %s config path\n", style("papercli"))
 }
 
