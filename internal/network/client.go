@@ -18,6 +18,7 @@ type Client struct {
 	maxRetries  int
 	baseBackoff time.Duration
 	logger      *log.Logger
+	verbose     bool
 }
 
 type Options struct {
@@ -25,6 +26,7 @@ type Options struct {
 	MaxRetries  int
 	BaseBackoff time.Duration
 	Logger      *log.Logger
+	Verbose     bool
 }
 
 func New(opts Options) *Client {
@@ -47,6 +49,7 @@ func New(opts Options) *Client {
 		maxRetries:  maxRetries,
 		baseBackoff: backoff,
 		logger:      opts.Logger,
+		verbose:     opts.Verbose,
 	}
 }
 
@@ -90,7 +93,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, timeout time.Duratio
 		if delay <= 0 {
 			delay = c.jitteredBackoff(attempt)
 		}
-		if c.logger != nil {
+		if c.verbose && c.logger != nil {
 			c.logger.Printf("retrying request status=%d attempt=%d delay=%s", resp.StatusCode, attempt+1, delay)
 		}
 		if err := sleepWithContext(ctx, delay); err != nil {

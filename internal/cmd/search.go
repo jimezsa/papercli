@@ -18,6 +18,7 @@ func (c *SearchCmd) Run(app *App) error {
 	}
 
 	providerName := app.EffectiveProvider(c.Provider)
+	warnUnsupportedSort(app, providerName, c.Sort)
 	result, err := app.Manager.Search(app.Context(), providerName, params)
 	if err != nil && len(result.Papers) == 0 {
 		return err

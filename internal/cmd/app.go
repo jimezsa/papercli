@@ -39,6 +39,7 @@ func NewApp(version string, globals Globals, stdout, stderr io.Writer) (*App, er
 		MaxRetries:  3,
 		BaseBackoff: 350 * time.Millisecond,
 		Logger:      logger,
+		Verbose:     globals.Verbose,
 	})
 
 	mgr := provider.NewManager(

@@ -13,7 +13,6 @@ func ParseGlobalArgs(args []string) (Globals, bool, bool, string, []string, erro
 	globals := Globals{
 		Color:   envString("PAPERCLI_COLOR", "auto"),
 		JSON:    envBool("PAPERCLI_JSON", false),
-		Plain:   envBool("PAPERCLI_PLAIN", false),
 		Verbose: envBool("PAPERCLI_VERBOSE", false),
 	}
 
@@ -54,12 +53,15 @@ func ParseGlobalArgs(args []string) (Globals, bool, bool, string, []string, erro
 	if err := validateColorMode(globals.Color); err != nil {
 		return Globals{}, false, false, "", nil, err
 	}
-	if globals.JSON && globals.Plain {
-		return Globals{}, false, false, "", nil, errors.New("cannot use --json and --plain together")
+	if err := validateOutputMode(globals); err != nil {
+		return Globals{}, false, false, "", nil, err
 	}
 
 	if showVersion {
 		return globals, true, showHelp, "version", nil, nil
+	}
+	if len(rest) > 0 && strings.HasPrefix(rest[0], "-") {
+		return Globals{}, false, false, "", nil, fmt.Errorf("unknown global flag %q", rest[0])
 	}
 	if len(rest) == 0 {
 		return globals, false, showHelp, "", nil, nil
@@ -161,6 +163,9 @@ func dispatchSearch(app *App, args []string) error {
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
+	if err := validateSort(cmd.Sort); err != nil {
+		return err
+	}
 
 	query := strings.Join(fs.Args(), " ")
 	query = strings.TrimSpace(query)
@@ -214,6 +219,9 @@ func dispatchAuthor(app *App, args []string) error {
 		"output":    {},
 	})
 	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if err := validateSort(cmd.Sort); err != nil {
 		return err
 	}
 

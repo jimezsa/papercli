@@ -58,59 +58,22 @@ func (m *Manager) Info(ctx context.Context, providerName, id string) (*models.Pa
 	if err != nil {
 		return nil, err
 	}
-	if len(selected) == 1 {
-		p, err := selected[0].Info(ctx, id)
-		if err != nil {
-			return nil, ProviderError{Provider: selected[0].Name(), Op: "info", Err: err}
-		}
-		return p, nil
-	}
-
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	type infoResult struct {
-		paper *models.Paper
-		err   error
-		name  string
-	}
-	results := make(chan infoResult, len(selected))
-
-	var wg sync.WaitGroup
-	for _, p := range selected {
-		p := p
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			paper, err := p.Info(ctx, id)
-			if err != nil {
-				results <- infoResult{name: p.Name(), err: ProviderError{Provider: p.Name(), Op: "info", Err: err}}
-				return
-			}
-			if paper != nil {
-				cancel()
-				results <- infoResult{name: p.Name(), paper: paper}
-				return
-			}
-			results <- infoResult{name: p.Name(), err: ProviderError{Provider: p.Name(), Op: "info", Err: errors.New("paper not found")}}
-		}()
-	}
-	wg.Wait()
-	close(results)
-
 	var errs []error
-	for res := range results {
-		if res.paper != nil {
-			return res.paper, nil
+	for _, p := range selected {
+		paper, err := p.Info(ctx, id)
+		if err != nil {
+			errs = append(errs, ProviderError{Provider: p.Name(), Op: "info", Err: err})
+			continue
 		}
-		if res.err != nil {
-			errs = append(errs, res.err)
+		if paper != nil {
+			return paper, nil
 		}
+		errs = append(errs, ProviderError{Provider: p.Name(), Op: "info", Err: errors.New("paper not found")})
 	}
-	if len(errs) == 0 {
-		return nil, errors.New("paper not found")
+	if len(errs) > 0 {
+		return nil, errors.Join(errs...)
 	}
-	return nil, errors.Join(errs...)
+	return nil, errors.New("paper not found")
 }
 
 func (m *Manager) fanOut(
@@ -175,13 +138,29 @@ func (m *Manager) fanOut(
 func (m *Manager) selectProviders(providerName string) ([]Provider, error) {
 	name := strings.ToLower(strings.TrimSpace(providerName))
 	if name == "" || name == "all" {
-		selected := make([]Provider, 0, len(m.providers))
-		for _, p := range m.providers {
+		order := []string{"arxiv", "semantic", "scholar"}
+		selected := make([]Provider, 0, len(order))
+		seen := make(map[string]struct{}, len(m.providers))
+		for _, provider := range order {
+			p, ok := m.providers[provider]
+			if !ok {
+				continue
+			}
 			selected = append(selected, p)
+			seen[provider] = struct{}{}
 		}
-		sort.Slice(selected, func(i, j int) bool {
-			return selected[i].Name() < selected[j].Name()
-		})
+
+		extraNames := make([]string, 0, len(m.providers))
+		for provider := range m.providers {
+			if _, ok := seen[provider]; ok {
+				continue
+			}
+			extraNames = append(extraNames, provider)
+		}
+		sort.Strings(extraNames)
+		for _, provider := range extraNames {
+			selected = append(selected, m.providers[provider])
+		}
 		return selected, nil
 	}
 
