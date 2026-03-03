@@ -222,3 +222,50 @@ Workflow target: `.github/workflows/ci.yml`
 4.  **First Provider (arXiv)**: Implement XML parsing, pagination, and author query mode.
 5.  **Concurrency**: Add multi-provider fan-out/fan-in execution with context cancellation.
 6.  **Export + Seen**: Implement JSON/CSV/Markdown writers and seen diff/update commands.
+
+## CLI audit backlog (March 3, 2026)
+
+The following items come from a hands-on CLI audit (`make build`, `make test`, `make lint`, plus live `search/info/download/seen` command runs).
+These are prioritized for deep-research reliability and automation.
+
+### P0 - high impact
+
+1. Global-flag ergonomics:
+   - Problem: `--json`/`--plain` only work before the command (`papercli --json search ...`), while many users naturally place flags after subcommands.
+   - Improvement: accept global flags in both positions or emit a targeted guidance error.
+
+2. Retry/logging noise:
+   - Problem: network retry logs are printed to `stderr` even without `--verbose`.
+   - Improvement: gate retry logs behind `--verbose` and keep default `stderr` clean for scripting.
+
+3. Validation order for `--new-only`/`--new-out`:
+   - Problem: `--seen` requirement is currently validated late, after provider calls.
+   - Improvement: fail fast during command argument validation.
+
+4. Config safety:
+   - Problem: `papercli config init` overwrites existing config unconditionally.
+   - Improvement: require explicit overwrite confirmation flag (or fail if file exists).
+
+### P1 - correctness and determinism
+
+1. Provider sort semantics:
+   - Problem: `--sort citations` is not consistently implemented across providers (and may silently fall back).
+   - Improvement: either implement per-provider behavior or warn when requested sort is unsupported.
+
+2. `info --provider all` determinism:
+   - Problem: first provider response wins, which can vary by timing.
+   - Improvement: define deterministic provider precedence and document it.
+
+3. Conflicting output modes:
+   - Problem: `--json` and `--plain` together currently resolve implicitly.
+   - Improvement: return a clear validation error for mutually exclusive output mode flags.
+
+### P2 - docs and test depth
+
+1. Documentation consistency:
+   - Problem: README flag tables have malformed markdown columns for enum values.
+   - Improvement: fix tables and add explicit examples for global-flag placement.
+
+2. Coverage gaps in core runtime packages:
+   - Problem: very low/zero statement coverage in `internal/cmd`, `internal/config`, and `internal/network`.
+   - Improvement: add tests for global-arg parsing, validation precedence, retry behavior, and provider error handling.
