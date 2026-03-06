@@ -11,6 +11,14 @@
 </p>
 CLI for searching academic papers across arXiv, Semantic Scholar, and Google Scholar (via SerpApi).
 
+### Skills (perform deepresearch only on papers)
+
+| Skill         | Purpose                                                                                | Best use case                                                                       |
+| ------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `fast-search` | Rapid, evidence-grounded paper scouting with a referenced `findings.md`.               | Quick orientation on a topic with 3-6 papers and key equations.                     |
+| `pro-search`  | Professional medium-depth literature synthesis with cross-paper comparisons.           | Serious research questions needing 8-12 papers and explicit tradeoff analysis.      |
+| `deep-search` | Institutional-grade deep investigation with iterative waves and exhaustive references. | State-of-the-art reviews, strategy decisions, and high-confidence evidence mapping. |
+
 ## Installation
 
 ### Option 1: Homebrew (macOS/Linux)
@@ -83,52 +91,52 @@ cp ./bin/papercli ./papercli
 | `papercli author <name>`                                                   | Search papers by author name.                                         |
 | `papercli info <id>`                                                       | Fetch paper metadata by provider identifier.                          |
 | `papercli download <id>`                                                   | Download paper PDF using provider metadata.                           |
-| `papercli seen diff --new A.json --seen B.json --out C.json [--stats]`    | Write papers in `A.json` that are not present in seen store `B.json`. |
+| `papercli seen diff --new A.json --seen B.json --out C.json [--stats]`     | Write papers in `A.json` that are not present in seen store `B.json`. |
 | `papercli seen update --seen B.json --input C.json --out B.json [--stats]` | Update seen store with papers from input JSON.                        |
 
 ### Global flags
 
-| Flag           | Description                                            | Values / Default          |
-| -------------- | ------------------------------------------------------ | ------------------------- |
-| `--color`      | Color output mode.                                     | `auto`, `always`, `never` (default: `auto`) |
-| `--json`       | Output JSON to stdout (disables colors).               | boolean                   |
-| `--plain`      | Output TSV to stdout (disables colors).                | boolean                   |
-| `--verbose`    | Enable debug logging to stderr.                        | boolean                   |
-| `--version`    | Print version and exit.                                | boolean                   |
-| `--help`, `-h` | Show help.                                             | boolean                   |
+| Flag           | Description                              | Values / Default                            |
+| -------------- | ---------------------------------------- | ------------------------------------------- |
+| `--color`      | Color output mode.                       | `auto`, `always`, `never` (default: `auto`) |
+| `--json`       | Output JSON to stdout (disables colors). | boolean                                     |
+| `--plain`      | Output TSV to stdout (disables colors).  | boolean                                     |
+| `--verbose`    | Enable debug logging to stderr.          | boolean                                     |
+| `--version`    | Print version and exit.                  | boolean                                     |
+| `--help`, `-h` | Show help.                               | boolean                                     |
 
 ### Shared flags for `search` and `author`
 
-| Flag                | Description                                          | Values / Default                      |
-| ------------------- | ---------------------------------------------------- | ------------------------------------- |
-| `--provider`        | Provider to query.                                   | `arxiv`, `semantic`, `scholar`, `all` (default: `all`) |
+| Flag                | Description                                                           | Values / Default                                        |
+| ------------------- | --------------------------------------------------------------------- | ------------------------------------------------------- |
+| `--provider`        | Provider to query.                                                    | `arxiv`, `semantic`, `scholar`, `all` (default: `all`)  |
 | `--sort`            | Sort mode (provider dependent; unsupported sorts warn and fall back). | `relevance`, `date`, `citations` (default: `relevance`) |
-| `--year-from`       | Lower publication year bound.                        | integer                               |
-| `--year-to`         | Upper publication year bound.                        | integer                               |
-| `--limit`           | Maximum number of results.                           | integer (default from config or `20`) |
-| `--offset`          | Result offset.                                       | integer (default: `0`)                |
-| `--format`          | Output format.                                       | `csv`, `json`, `md`                   |
-| `--links`           | Link rendering mode for table output.                | `short`, `full` (default: `full`)     |
-| `--seen`            | Seen-history JSON file path.                         | path                                  |
-| `--new-only`        | Output only unseen papers (requires `--seen`).       | boolean                               |
-| `--new-out`         | Always write unseen papers JSON (requires `--seen`). | path                                  |
-| `--out`, `--output` | Output file path.                                    | path                                  |
+| `--year-from`       | Lower publication year bound.                                         | integer                                                 |
+| `--year-to`         | Upper publication year bound.                                         | integer                                                 |
+| `--limit`           | Maximum number of results.                                            | integer (default from config or `20`)                   |
+| `--offset`          | Result offset.                                                        | integer (default: `0`)                                  |
+| `--format`          | Output format.                                                        | `csv`, `json`, `md`                                     |
+| `--links`           | Link rendering mode for table output.                                 | `short`, `full` (default: `full`)                       |
+| `--seen`            | Seen-history JSON file path.                                          | path                                                    |
+| `--new-only`        | Output only unseen papers (requires `--seen`).                        | boolean                                                 |
+| `--new-out`         | Always write unseen papers JSON (requires `--seen`).                  | path                                                    |
+| `--out`, `--output` | Output file path.                                                     | path                                                    |
 
 ### Flags for `info`
 
-| Flag                | Description          | Values / Default |
-| ------------------- | -------------------- | ---------------- |
+| Flag                | Description          | Values / Default                                       |
+| ------------------- | -------------------- | ------------------------------------------------------ |
 | `--provider`        | Provider to query.   | `arxiv`, `semantic`, `scholar`, `all` (default: `all`) |
-| `--format`          | Output format.       | `csv`, `json`, `md` (default: `json`) |
-| `--links`           | Link rendering mode. | `short`, `full` (default: `full`) |
-| `--out`, `--output` | Output file path.    | path             |
+| `--format`          | Output format.       | `csv`, `json`, `md` (default: `json`)                  |
+| `--links`           | Link rendering mode. | `short`, `full` (default: `full`)                      |
+| `--out`, `--output` | Output file path.    | path                                                   |
 
 ### Flags for `download`
 
-| Flag                          | Description        | Values / Default                      |
-| ----------------------------- | ------------------ | ------------------------------------- |
+| Flag                          | Description        | Values / Default                                       |
+| ----------------------------- | ------------------ | ------------------------------------------------------ |
 | `--provider`                  | Provider to query. | `arxiv`, `semantic`, `scholar`, `all` (default: `all`) |
-| `--out`, `--output`, `--file` | Output PDF path.   | path (default: derived from paper ID) |
+| `--out`, `--output`, `--file` | Output PDF path.   | path (default: derived from paper ID)                  |
 
 ### Flags for `seen diff`
 
