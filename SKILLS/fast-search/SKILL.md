@@ -34,6 +34,15 @@ metadata:
 
 Use this skill for a rapid, evidence-grounded literature brief when the user needs quick scientific orientation without sacrificing traceability.
 
+## Update This Skill
+
+To refresh this skill directly from the GitHub repo:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jimezsa/papercli/main/SKILLS/fast-search/SKILL.md \
+  -o SKILLS/fast-search/SKILL.md
+```
+
 ## Mission
 
 Given a research question, use `papercli` to:
