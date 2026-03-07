@@ -34,6 +34,15 @@ metadata:
 
 Use this skill for comprehensive scientific research tasks such as state-of-the-art reviews, deep comparisons, research strategy, and evidence-heavy decision support.
 
+## Update This Skill
+
+To refresh this skill directly from the GitHub repo:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jimezsa/papercli/main/SKILLS/deep-search/SKILL.md \
+  -o SKILLS/deep-search/SKILL.md
+```
+
 ## Mission
 
 Deliver an institutional-grade `findings.md` by:
