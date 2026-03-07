@@ -1,6 +1,33 @@
 ---
 name: pro-search
 description: Professional paper research with papercli. Multi-pass search, PDF download and reading, math-aware synthesis, and a detailed referenced markdown findings report.
+homepage: https://github.com/jimezsa/papercli
+metadata:
+  {
+    "openclaw":
+      {
+        "emoji": "📄",
+        "os": ["linux", "darwin"],
+        "requires": { "bins": ["papercli"] },
+        "install":
+          [
+            {
+              "id": "homebrew",
+              "kind": "shell",
+              "script": "brew install jimezsa/tap/papercli",
+              "bins": ["papercli"],
+              "label": "Install PaperCLI with Homebrew",
+            },
+            {
+              "id": "source",
+              "kind": "shell",
+              "script": "git clone https://github.com/jimezsa/papercli.git && cd papercli && make build && sudo install -m 0755 ./bin/papercli /usr/local/bin/papercli",
+              "bins": ["papercli"],
+              "label": "Build PaperCLI from source",
+            },
+          ],
+      },
+  }
 ---
 
 # Pro Search Skill
