@@ -34,6 +34,15 @@ metadata:
 
 Use this skill when the user needs a serious literature synthesis, not a quick scan. This workflow prioritizes methodological depth, cross-paper comparison, and explicit evidence tracking.
 
+## Update This Skill
+
+To refresh this skill directly from the GitHub repo:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jimezsa/papercli/main/SKILLS/pro-search/SKILL.md \
+  -o SKILLS/pro-search/SKILL.md
+```
+
 ## Mission
 
 Answer a scientific question by building a medium-depth evidence base from papers retrieved with `papercli`, then deliver a detailed `findings.md` with:
