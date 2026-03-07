@@ -36,6 +36,8 @@ Use this skill for a rapid, evidence-grounded literature brief when the user nee
 
 ## Update This Skill
 
+Only do this if the user explicitly asks to update this skill from the GitHub repo.
+
 To refresh this skill directly from the GitHub repo:
 
 ```bash
