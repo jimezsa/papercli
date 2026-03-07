@@ -1,6 +1,33 @@
 ---
 name: deep-search
 description: Deep scientific investigation with papercli. Iterative search, broad PDF corpus download and reading, equation-level analysis, and exhaustive referenced markdown findings.
+homepage: https://github.com/jimezsa/papercli
+metadata:
+  {
+    "openclaw":
+      {
+        "emoji": "📄",
+        "os": ["linux", "darwin"],
+        "requires": { "bins": ["papercli"] },
+        "install":
+          [
+            {
+              "id": "homebrew",
+              "kind": "shell",
+              "script": "brew install jimezsa/tap/papercli",
+              "bins": ["papercli"],
+              "label": "Install PaperCLI with Homebrew",
+            },
+            {
+              "id": "source",
+              "kind": "shell",
+              "script": "git clone https://github.com/jimezsa/papercli.git && cd papercli && make build && sudo install -m 0755 ./bin/papercli /usr/local/bin/papercli",
+              "bins": ["papercli"],
+              "label": "Build PaperCLI from source",
+            },
+          ],
+      },
+  }
 ---
 
 # Deep Search Skill
