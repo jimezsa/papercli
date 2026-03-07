@@ -36,6 +36,8 @@ Use this skill when the user needs a serious literature synthesis, not a quick s
 
 ## Update This Skill
 
+Only do this if the user explicitly asks to update this skill from the GitHub repo.
+
 To refresh this skill directly from the GitHub repo:
 
 ```bash
