@@ -90,7 +90,7 @@ Define:
 Create workspace:
 
 ```bash
-mkdir -p research/{search,meta,pdf,text,notes,tables}
+mkdir -p research/{search,meta,pdf,tables}
 ```
 
 Run at least 4 waves:
@@ -148,7 +148,7 @@ Direct-ingestion priorities:
 
 ### 6. Structured evidence capture
 
-For each deep-read paper, create `research/notes/<safe_id>.md` using this exact schema:
+For each deep-read paper, create `research/pdf/<safe_id>.md`, next to `research/pdf/<safe_id>.pdf`, using this exact schema:
 
 ```markdown
 # Paper Extraction Schema: <Paper Title>
@@ -234,7 +234,7 @@ Then analyze:
 - Contradictions and likely causes.
 - Gaps and open problems.
 - Most defensible practical recommendations.
-- Use the structured paper summaries in `research/notes/` as the canonical source for cross-paper comparison.
+- Use the structured paper summaries in `research/pdf/` as the canonical source for cross-paper comparison.
 
 ## Key Math Protocol
 
@@ -299,7 +299,7 @@ Interpretation and implications [R#].
 ## References
 | Ref | Title | Authors | Year | Provider ID | Local evidence |
 |---|---|---|---|---|---|
-| R1 | ... | ... | ... | ... | `meta/...json`, `notes/...md`, `pdf/...pdf` |
+| R1 | ... | ... | ... | ... | `meta/...json`, `pdf/...md`, `pdf/...pdf` |
 ```
 
 ## Referencing Standard
@@ -317,4 +317,4 @@ Before finalizing `findings.md`, verify:
 3. Math section includes equations plus interpretation.
 4. Conflicting evidence is surfaced, not hidden.
 5. References map to real downloaded/local files.
-6. Each deep-read paper has an agent-ready summary in `research/notes/` unless extraction failed.
+6. Each deep-read paper has an agent-ready summary in `research/pdf/` unless extraction failed.
