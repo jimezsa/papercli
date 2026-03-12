@@ -81,7 +81,7 @@ If inputs are missing, infer a minimal scope and proceed.
 ### 1. Setup workspace
 
 ```bash
-mkdir -p research/{search,meta,pdf,text,notes}
+mkdir -p research/{search,meta,pdf}
 ```
 
 Initialize config when needed:
@@ -141,7 +141,7 @@ Direct-ingestion priorities:
 - When the method is clearer in a diagram than in prose, translate the diagram into equations and data flow in the summary.
 - If the PDF cannot be inspected locally, keep the paper in references, use metadata where possible, and mark the summary as metadata-only evidence.
 
-Then create one deterministic summary per paper at `research/notes/<safe_id>.md` using this exact schema:
+Then create one deterministic summary per paper at `research/pdf/<safe_id>.md`, next to `research/pdf/<safe_id>.pdf`, using this exact schema:
 
 ```markdown
 # Paper Extraction Schema: <Paper Title>
@@ -220,7 +220,7 @@ Target quality: fast but technically useful.
 - Include 3-6 referenced papers.
 - Provide a compact synthesis of core ideas.
 - Include at least 2 key equations from the corpus when available.
-- Use the per-paper schemas in `research/notes/` as the primary synthesis substrate.
+- Use the per-paper schemas in `research/pdf/` as the primary synthesis substrate.
 
 ## Output Contract (`findings.md`)
 
@@ -269,8 +269,8 @@ Meaning and assumptions [R2].
 ## References
 | Ref | Paper | Provider ID | Year | Evidence |
 |---|---|---|---|---|
-| R1 | Title... | arxiv:... | 2024 | `notes/...md`, `pdf/...pdf` |
-| R2 | Title... | semantic:... | 2023 | `notes/...md`, `pdf/...pdf` |
+| R1 | Title... | arxiv:... | 2024 | `pdf/...md`, `pdf/...pdf` |
+| R2 | Title... | semantic:... | 2023 | `pdf/...md`, `pdf/...pdf` |
 ```
 
 ## Referencing Rules
@@ -285,5 +285,5 @@ Meaning and assumptions [R2].
 - `findings.md` exists and is detailed.
 - Claims are referenced.
 - Papers were downloaded and read.
-- Each selected paper has an agent-ready summary in `research/notes/` unless extraction failed.
+- Each selected paper has an agent-ready summary in `research/pdf/` unless extraction failed.
 - Core ideas, concepts, and key math are covered.
