@@ -168,6 +168,7 @@ Rules:
 
 ## 2. Main Architecture (Mathematical Formalization)
 Agent instruction: Extract the core methodology and represent it strictly as a sequence of mathematical operations, data flows, and loss functions. Use standard LaTeX notation.
+The main architecture can often be extracted directly from the architecture image or pipeline diagram in the paper.
 If the method is explained primarily through a figure or diagram, use the PDF figure as evidence and translate it into equations and ordered data flow.
 
 Input:
