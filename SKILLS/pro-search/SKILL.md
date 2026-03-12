@@ -86,7 +86,7 @@ Run at least 3 query types:
 3. Recent trend phrasing.
 
 ```bash
-mkdir -p research/{search,meta,pdf,text,notes}
+mkdir -p research/{search,meta,pdf}
 
 papercli search "<canonical query>" --provider all --sort relevance --limit 25 --format json --out research/search/q1.json
 papercli search "<method query>"    --provider all --sort relevance --limit 25 --format json --out research/search/q2.json
@@ -126,7 +126,7 @@ Direct-ingestion priorities:
 - Treat figures, captions, and tables as first-class evidence during note creation.
 - If the PDF cannot be inspected locally for a paper, mark the summary explicitly as metadata-only evidence.
 
-For each paper, create `research/notes/<safe_id>.md` using this exact schema:
+For each paper, create `research/pdf/<safe_id>.md`, next to `research/pdf/<safe_id>.pdf`, using this exact schema:
 
 ```markdown
 # Paper Extraction Schema: <Paper Title>
@@ -208,7 +208,7 @@ Then produce:
 - Consensus findings.
 - Disputed findings.
 - Practical implications for the user's question.
-- Base the comparison on the structured summaries in `research/notes/`, not ad hoc free-form notes.
+- Base the comparison on the structured summaries in `research/pdf/`, not ad hoc free-form notes.
 
 ## Key Math Handling
 
@@ -268,7 +268,7 @@ Interpretation [R3].
 ## References
 | Ref | Title | Authors | Year | Provider ID | Source files |
 |---|---|---|---|---|---|
-| R1 | ... | ... | ... | ... | `meta/...json`, `notes/...md`, `pdf/...pdf` |
+| R1 | ... | ... | ... | ... | `meta/...json`, `pdf/...md`, `pdf/...pdf` |
 ```
 
 ## Referencing Rules
@@ -282,5 +282,5 @@ Interpretation [R3].
 - `findings.md` is detailed and decision-useful.
 - 8-12 papers were processed (or explain shortfall).
 - Math, concepts, and evidence-based synthesis are present.
-- Each processed paper has an agent-ready summary in `research/notes/` unless extraction failed.
-- References map back to local metadata, paper summaries, and downloaded PDFs.
+- Each processed paper has an agent-ready summary in `research/pdf/` unless extraction failed.
+- References map back to local metadata, colocated paper summaries, and downloaded PDFs.
