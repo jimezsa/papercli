@@ -137,34 +137,88 @@ while read -r id; do
 done < research/meta/deep_read_ids.txt
 ```
 
-### 5. Full-text extraction
+### 5. Create agent-ready paper summaries
 
-```bash
-for pdf in research/pdf/*.pdf; do
-  [ -e "$pdf" ] || continue
-  txt="research/text/$(basename "${pdf%.pdf}").txt"
-  if command -v pdftotext >/dev/null 2>&1; then
-    pdftotext -layout "$pdf" "$txt"
-  fi
-done
-```
+Read each PDF directly first so figures, tables, and layout structure remain available during deep analysis.
 
-If extraction fails:
-- Keep metadata reference.
-- Mark as "metadata-only evidence" in the final report.
-- Attempt an alternate local extractor before giving up.
+Direct-ingestion priorities:
+- Inspect the abstract, introduction, method section, architecture figures, benchmark tables, ablations, appendix figures, and limitations.
+- Treat figures, captions, tables, and appendix visuals as first-class evidence.
+- If the PDF cannot be inspected locally, keep metadata reference and mark the summary as metadata-only evidence.
 
 ### 6. Structured evidence capture
 
-For each deep-read paper, store notes in `research/notes/<safe_id>.md` with:
-- Problem and motivation.
-- Assumptions and threat model.
-- Method details.
-- Experimental setup.
-- Main quantitative outcomes.
-- Failure modes and limitations.
-- Reproducibility signals (code/data availability).
-- Key equations and variable definitions.
+For each deep-read paper, create `research/notes/<safe_id>.md` using this exact schema:
+
+```markdown
+# Paper Extraction Schema: <Paper Title>
+
+Rules:
+- Keep the section order unchanged for deterministic parsing.
+- Ingest the PDF directly first so figures, tables, captions, and layout remain available.
+- Anchor each section to observable PDF evidence such as figures, captions, equations, tables, and appendix material.
+- Use metadata only as fallback and label it clearly.
+- Do not invent equations, datasets, metrics, links, or foundation papers.
+- If evidence is missing, write `Not clearly stated in available evidence.`.
+- If a statement is an inference rather than an explicit claim, label it `Inference from available evidence: ...`.
+
+## 1. The Why (Motivation & Core Problem)
+- The Problem: What specific limitation in existing research or technology is this paper trying to solve? Keep this to 1-2 sentences.
+- The Core Idea: What is the authors' main hypothesis or novel approach to solving this problem?
+
+## 2. Main Architecture (Mathematical Formalization)
+Agent instruction: Extract the core methodology and represent it strictly as a sequence of mathematical operations, data flows, and loss functions. Use standard LaTeX notation.
+If the method is explained primarily through a figure or diagram, use the PDF figure as evidence and translate it into equations and ordered data flow.
+
+Input:
+\[
+X = \text{...}
+\]
+
+Forward Pass:
+\[
+H_1 = f_{\text{module\_1}}(X)
+\]
+\[
+H_2 = f_{\text{module\_2}}(H_1)
+\]
+\[
+\hat{Y} = f_{\text{head}}(H_2)
+\]
+
+Loss / Optimization:
+\[
+\mathcal{L}_{\text{total}} = \lambda_1 \mathcal{L}_{\text{task}} + \lambda_2 \mathcal{L}_{\text{reg}}
+\]
+
+## 3. The Why of the Architecture (Component Rationale)
+Agent instruction: For every variable and function defined in Section 2, explain exactly why it was chosen or designed that way.
+
+- $X$: Why is the input represented this way?
+- $f_{\text{module\_1}}$: Why use this specific module?
+- $f_{\text{module\_2}}$: Why is this step necessary?
+- $f_{\text{head}}$: Why this prediction head?
+- $\mathcal{L}_{\text{task}}$: Why this task objective?
+- $\mathcal{L}_{\text{reg}}$: Why use this specific regularizer?
+
+## 4. Metrics & Evaluation
+- Datasets Used: List the primary benchmarks.
+- Key Metrics: How is success quantified?
+- The Result: One sentence summarizing the paper's main performance claim.
+- Visual Evidence: Note the key figure, table, or ablation that best supports the reported result when one is clearly present.
+
+## 5. Relevant Links & Knowledge Anchors
+- Project Page / GitHub: Link if available in the paper or metadata.
+- Core Foundation Paper: The 1 or 2 most relied-upon prior papers, if the dependency is clear from the text.
+```
+
+Summary requirements:
+- Keep the section order unchanged.
+- Express the main method as LaTeX equations plus data flow and loss terms.
+- Explain why each Section 2 variable, module, and loss term exists.
+- Preserve figure/table evidence when it carries the method, mechanism, or strongest empirical support.
+- Label missing evidence explicitly instead of guessing.
+- Mark inferred statements as `Inference from available evidence: ...`.
 
 ### 7. Cross-paper synthesis
 
@@ -179,6 +233,7 @@ Then analyze:
 - Contradictions and likely causes.
 - Gaps and open problems.
 - Most defensible practical recommendations.
+- Use the structured paper summaries in `research/notes/` as the canonical source for cross-paper comparison.
 
 ## Key Math Protocol
 
@@ -214,7 +269,7 @@ Direct answer to the user question with confidence-qualified claims [R#].
 ## Literature Map
 | Ref | Paper | Year | Method family | Evidence depth |
 |---|---|---|---|---|
-| R1 | ... | ... | ... | full-text |
+| R1 | ... | ... | ... | pdf-read |
 
 ## Core Ideas and Concepts
 Deep synthesis paragraphs with inline refs [R#].
@@ -243,7 +298,7 @@ Interpretation and implications [R#].
 ## References
 | Ref | Title | Authors | Year | Provider ID | Local evidence |
 |---|---|---|---|---|---|
-| R1 | ... | ... | ... | ... | `meta/...json`, `text/...txt` |
+| R1 | ... | ... | ... | ... | `meta/...json`, `notes/...md`, `pdf/...pdf` |
 ```
 
 ## Referencing Standard
@@ -251,7 +306,7 @@ Interpretation and implications [R#].
 - Use `[R1]`, `[R2]`, ... inline everywhere factual.
 - Tables must include citations in relevant cells.
 - For numerical claims, cite source paper(s) in the same sentence or cell.
-- Do not add a claim if evidence is not present in metadata or extracted text.
+- Do not add a claim if evidence is not present in metadata, the PDF, or the structured summary.
 
 ## Quality Gate Before Finish
 
@@ -260,4 +315,5 @@ Before finalizing `findings.md`, verify:
 2. Every analytical claim has citations.
 3. Math section includes equations plus interpretation.
 4. Conflicting evidence is surfaced, not hidden.
-5. References map to real downloaded/parsed files.
+5. References map to real downloaded/local files.
+6. Each deep-read paper has an agent-ready summary in `research/notes/` unless extraction failed.
