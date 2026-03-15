@@ -7,6 +7,7 @@ import argparse
 import concurrent.futures
 import json
 import os
+import re
 import sys
 import time
 from dataclasses import dataclass
@@ -21,7 +22,7 @@ except ImportError:
     types = None
 
 
-DEFAULT_MODEL = os.getenv("PAPER_SUMMARY_GEMINI_MODEL", "gemini-3.1-pro-preview")
+DEFAULT_MODEL_NAME = "gemini-3.1-flash-lite-preview"
 DEFAULT_MAX_OUTPUT_TOKENS = 8192
 REQUIRED_SECTION_PREFIXES = [
     "# Paper Extraction Schema:",
@@ -31,6 +32,11 @@ REQUIRED_SECTION_PREFIXES = [
     "## 4.",
     "## 5.",
 ]
+SCRIPT_DIR = Path(__file__).resolve().parent
+SKILL_DIR = SCRIPT_DIR.parent
+REPO_ROOT = SKILL_DIR.parent.parent
+ENV_LOCAL_PATH = REPO_ROOT / ".env.local"
+ENV_KEY_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 
 @dataclass(frozen=True)
@@ -53,6 +59,7 @@ class Result:
 
 
 def parse_args() -> argparse.Namespace:
+    default_model = os.getenv("PAPER_SUMMARY_GEMINI_MODEL", DEFAULT_MODEL_NAME)
     parser = argparse.ArgumentParser(
         description="Generate markdown paper summaries from one PDF or a directory of PDFs."
     )
@@ -85,8 +92,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--model",
-        default=DEFAULT_MODEL,
-        help=f"Gemini model name to call. Default: {DEFAULT_MODEL}.",
+        default=default_model,
+        help=f"Gemini model name to call. Default: {default_model}.",
     )
     parser.add_argument(
         "--concurrency",
@@ -115,10 +122,11 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    load_env_local()
     args = parse_args()
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        print("GEMINI_API_KEY is not set.", file=sys.stderr)
+        print(f"GEMINI_API_KEY is not set. Checked process environment and {ENV_LOCAL_PATH}.", file=sys.stderr)
         return 2
     if genai is None or types is None:
         print(
@@ -127,7 +135,7 @@ def main() -> int:
         )
         return 2
 
-    schema_path = Path(__file__).resolve().parent.parent / "references" / "summary_schema.md"
+    schema_path = SKILL_DIR / "references" / "summary_schema.md"
     schema_text = schema_path.read_text(encoding="utf-8").strip()
 
     jobs = build_jobs(args)
@@ -177,6 +185,38 @@ def main() -> int:
         )
     )
     return 0 if failed_count == 0 else 1
+
+
+def load_env_local() -> None:
+    if not ENV_LOCAL_PATH.is_file():
+        return
+
+    for raw_line in ENV_LOCAL_PATH.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line[len("export ") :].lstrip()
+
+        if "=" not in line:
+            continue
+
+        key, value = line.split("=", 1)
+        key = key.strip()
+        if not ENV_KEY_PATTERN.match(key) or key in os.environ:
+            continue
+
+        os.environ[key] = parse_env_value(value.strip())
+
+
+def parse_env_value(value: str) -> str:
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+        quote = value[0]
+        inner = value[1:-1]
+        if quote == '"':
+            return bytes(inner, "utf-8").decode("unicode_escape")
+        return inner
+    return value
 
 
 def build_jobs(args: argparse.Namespace) -> list[Job]:
@@ -237,9 +277,19 @@ def load_metadata(metadata_path: Path | None) -> dict[str, Any] | None:
     if metadata_path is None:
         return None
     try:
-        return json.loads(metadata_path.read_text(encoding="utf-8"))
+        payload = json.loads(metadata_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise ValueError(f"invalid metadata JSON at {metadata_path}: {exc}") from exc
+
+    if isinstance(payload, dict):
+        return payload
+    if isinstance(payload, list):
+        for item in payload:
+            if isinstance(item, dict):
+                return item
+        raise ValueError(f"metadata JSON at {metadata_path} does not contain an object entry")
+
+    raise ValueError(f"metadata JSON at {metadata_path} must be an object or list of objects")
 
 
 def extract_original_id(metadata: dict[str, Any] | None) -> str | None:
