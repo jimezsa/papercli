@@ -98,7 +98,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--concurrency",
         type=int,
-        default=4,
+        default=20,
         help="Maximum number of concurrent Gemini requests in batch mode.",
     )
     parser.add_argument(
