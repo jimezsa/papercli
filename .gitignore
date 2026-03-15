@@ -10,6 +10,6 @@
 coverage.*
 
 .env.local
-
+/research/
 # macOS
 .DS_Store
