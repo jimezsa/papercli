@@ -10,10 +10,6 @@
 - Added local `.env.local` loading support to the `paper-summary` Gemini script
 - Added support for metadata inputs that are either a single object or a list of objects
 
-### Fixed
-
-- Ignored the local `/research/` workspace path in Git tracking
-
 ## [0.1.1] - 2026-03-01
 
 ### Fixed
