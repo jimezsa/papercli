@@ -48,6 +48,7 @@ Given one paper PDF or a directory of paper PDFs:
 ## Prerequisites
 
 - `python3` is installed and available in `PATH`.
+- `google-genai` is installed: `python3 -m pip install google-genai`
 - `GEMINI_API_KEY` is set in the environment.
 - Network access is available when running the Gemini script.
 - The PDFs already exist locally.

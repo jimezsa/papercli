@@ -4,24 +4,25 @@
 from __future__ import annotations
 
 import argparse
-import base64
 import concurrent.futures
 import json
 import os
 import sys
 import time
-import urllib.error
-import urllib.parse
-import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+try:
+    from google import genai
+    from google.genai import types
+except ImportError:
+    genai = None
+    types = None
+
 
 DEFAULT_MODEL = os.getenv("PAPER_SUMMARY_GEMINI_MODEL", "gemini-2.5-pro")
-DEFAULT_TIMEOUT_SECONDS = 300
 DEFAULT_MAX_OUTPUT_TOKENS = 8192
-RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
 REQUIRED_SECTION_PREFIXES = [
     "# Paper Extraction Schema:",
     "## 1.",
@@ -100,12 +101,6 @@ def parse_args() -> argparse.Namespace:
         help="Maximum output tokens requested from Gemini.",
     )
     parser.add_argument(
-        "--timeout-seconds",
-        type=int,
-        default=DEFAULT_TIMEOUT_SECONDS,
-        help="HTTP timeout for each Gemini request.",
-    )
-    parser.add_argument(
         "--overwrite",
         action="store_true",
         help="Regenerate summaries even if the markdown file already exists.",
@@ -124,6 +119,12 @@ def main() -> int:
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         print("GEMINI_API_KEY is not set.", file=sys.stderr)
+        return 2
+    if genai is None or types is None:
+        print(
+            "google-genai is not installed. Install it with: python3 -m pip install google-genai",
+            file=sys.stderr,
+        )
         return 2
 
     schema_path = Path(__file__).resolve().parent.parent / "references" / "summary_schema.md"
@@ -219,8 +220,7 @@ def run_job(
             api_key=api_key,
             model=args.model,
             prompt=prompt,
-            pdf_bytes=job.pdf_path.read_bytes(),
-            timeout_seconds=args.timeout_seconds,
+            pdf_path=job.pdf_path,
             max_output_tokens=args.max_output_tokens,
             retries=args.retries,
         )
@@ -282,87 +282,64 @@ def generate_summary(
     api_key: str,
     model: str,
     prompt: str,
-    pdf_bytes: bytes,
-    timeout_seconds: int,
+    pdf_path: Path,
     max_output_tokens: int,
     retries: int,
 ) -> str:
-    payload = {
-        "contents": [
-            {
-                "role": "user",
-                "parts": [
-                    {"text": prompt},
-                    {
-                        "inline_data": {
-                            "mime_type": "application/pdf",
-                            "data": base64.b64encode(pdf_bytes).decode("ascii"),
-                        }
-                    },
-                ],
-            }
-        ],
-        "generationConfig": {
-            "temperature": 0,
-            "candidateCount": 1,
-            "maxOutputTokens": max_output_tokens,
-            "responseMimeType": "text/plain",
-        },
-    }
-
-    url = (
-        "https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{urllib.parse.quote(model, safe='')}:generateContent?key="
-        f"{urllib.parse.quote(api_key, safe='')}"
-    )
-    request_body = json.dumps(payload).encode("utf-8")
-
+    last_error: Exception | None = None
     for attempt in range(1, max(retries, 1) + 1):
         try:
-            request = urllib.request.Request(
-                url,
-                data=request_body,
-                headers={"Content-Type": "application/json"},
-                method="POST",
+            client = genai.Client(api_key=api_key)
+            document = types.Part.from_bytes(
+                data=pdf_path.read_bytes(),
+                mime_type="application/pdf",
             )
-            with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
-                response_body = response.read().decode("utf-8")
-            return extract_text_from_response(response_body)
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace")
-            if exc.code in RETRYABLE_STATUS_CODES and attempt < retries:
-                time.sleep(2 ** (attempt - 1))
-                continue
-            raise RuntimeError(f"Gemini API error {exc.code}: {detail}") from exc
-        except urllib.error.URLError as exc:
+            response = client.models.generate_content(
+                model=model,
+                contents=[prompt, document],
+                config=types.GenerateContentConfig(
+                    temperature=0,
+                    max_output_tokens=max_output_tokens,
+                    response_mime_type="text/plain",
+                ),
+            )
+            summary = extract_text_from_response(response)
+            if summary:
+                return summary
+            raise RuntimeError("Gemini returned empty content")
+        except Exception as exc:
+            last_error = exc
             if attempt < retries:
                 time.sleep(2 ** (attempt - 1))
                 continue
-            raise RuntimeError(f"Gemini network error: {exc}") from exc
+            break
 
-    raise RuntimeError("Gemini request failed after retries")
+    raise RuntimeError(f"Gemini request failed after retries: {last_error}")
 
 
-def extract_text_from_response(response_body: str) -> str:
+def extract_text_from_response(response: Any) -> str:
     try:
-        payload = json.loads(response_body)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(f"invalid Gemini response: {exc}") from exc
+        text = response.text
+    except Exception:
+        text = None
 
-    if "error" in payload:
-        raise RuntimeError(json.dumps(payload["error"], ensure_ascii=True))
+    if isinstance(text, str) and text.strip():
+        return text.strip()
 
-    candidates = payload.get("candidates")
-    if not isinstance(candidates, list) or not candidates:
-        raise RuntimeError(f"Gemini returned no candidates: {response_body}")
+    candidates = getattr(response, "candidates", None)
+    if not candidates:
+        return ""
 
-    parts = candidates[0].get("content", {}).get("parts", [])
-    text_parts = [part.get("text", "") for part in parts if isinstance(part, dict)]
-    summary = "".join(text_parts).strip()
-    if not summary:
-        finish_reason = candidates[0].get("finishReason", "unknown")
-        raise RuntimeError(f"Gemini returned empty content, finishReason={finish_reason}")
-    return summary
+    text_parts: list[str] = []
+    for candidate in candidates:
+        content = getattr(candidate, "content", None)
+        parts = getattr(content, "parts", None) or []
+        for part in parts:
+            part_text = getattr(part, "text", None)
+            if isinstance(part_text, str) and part_text.strip():
+                text_parts.append(part_text)
+
+    return "".join(text_parts).strip()
 
 
 def strip_code_fences(text: str) -> str:
