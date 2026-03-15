@@ -1,6 +1,7 @@
 # Paper Extraction Schema: <Paper Title>
 
 Rules:
+
 - Keep the section order unchanged for deterministic parsing.
 - Ingest the PDF directly first so figures, tables, captions, and layout remain available.
 - Anchor each section to observable PDF evidence such as figures, captions, equations, tables, and appendix material.
@@ -11,17 +12,21 @@ Rules:
 - If a statement is an inference rather than an explicit claim, label it `Inference from available evidence: ...`.
 
 ## 1. The Why (Motivation & Core Problem)
+
 - The Problem: What specific limitation in existing research or technology is this paper trying to solve? Keep this to 1-2 sentences.
 - The Core Idea: What is the authors' main hypothesis or novel approach to solving this problem?
 - Evidence Anchors: Exact page, figure, table, or equation anchors supporting the problem framing.
 
 ## 2. Main Architecture (Mathematical Formalization)
+
 Agent instruction: Extract the core methodology and represent it strictly as a sequence of mathematical operations, data flows, and loss functions. Write equations in Markdown using fenced `math` blocks so they remain readable in raw `.md` and machine-extractable.
+The architecture is often communicated most clearly in PDF pictures such as pipeline figures, block diagrams, method overviews, and annotated visual layouts. Inspect those images directly and use them as primary evidence when reconstructing the model or algorithm flow.
 The main architecture can often be extracted directly from the architecture image or pipeline diagram in the paper.
 If the method is explained primarily through a figure or diagram, use the PDF figure as evidence and translate it into equations and ordered data flow.
 If the paper has no learnable architecture (for example a survey, benchmark, theorem, dataset, or systems paper), replace this section with `Algorithm / theorem / protocol flow` and formalize the central steps instead.
 Use `Loss / Optimization: Not applicable.` when no training objective exists.
 Formatting rules for this section:
+
 - Use a short label such as `Input`, `Forward Pass`, `Update Rule`, `Objective`, or `Algorithm Step k` before each math block.
 - Put each standalone equation or tightly related equation group in its own fenced `math` block.
 - Use inline math such as `$X$` only for short variable mentions inside sentences or bullets.
@@ -54,6 +59,7 @@ Loss / Optimization:
 Evidence Anchors: Exact figure, equation, algorithm, and page anchors used for this formalization.
 
 ## 3. The Why of the Architecture (Component Rationale)
+
 Agent instruction: For every variable and function defined in Section 2, explain exactly why it was chosen or designed that way.
 If Section 2 is non-architectural, explain why each algorithmic step, theorem component, protocol stage, or evaluation stage exists instead of model modules.
 
@@ -66,6 +72,7 @@ If Section 2 is non-architectural, explain why each algorithmic step, theorem co
 - Evidence Anchors: Exact page, figure, or appendix anchors supporting the rationale.
 
 ## 4. Metrics & Evaluation
+
 - Datasets Used: List the primary benchmarks.
 - Key Metrics: How is success quantified?
 - The Result: One sentence summarizing the paper's main performance claim.
@@ -73,11 +80,13 @@ If Section 2 is non-architectural, explain why each algorithmic step, theorem co
 - Evidence Anchors: Exact table, figure, ablation, and page anchors supporting the reported results.
 
 ## 5. Relevant Links & Knowledge Anchors
+
 - Project Page / GitHub: Link if available in the paper or metadata.
 - Core Foundation Paper: The 1 or 2 most relied-upon prior papers, if the dependency is clear from the text.
 - Evidence Anchors: Exact reference numbers, appendix pages, or metadata fields used to identify these links and foundation papers.
 
 Summary requirements:
+
 - Keep the section order unchanged.
 - Express the main method as Markdown-native math: use fenced `math` blocks for standalone equations and inline math for short symbol references.
 - Structure Section 2 as labeled math steps so both humans and parsers can recover the input, transformations, and objective.
