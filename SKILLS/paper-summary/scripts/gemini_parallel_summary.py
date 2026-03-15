@@ -21,7 +21,7 @@ except ImportError:
     types = None
 
 
-DEFAULT_MODEL = os.getenv("PAPER_SUMMARY_GEMINI_MODEL", "gemini-2.5-pro")
+DEFAULT_MODEL = os.getenv("PAPER_SUMMARY_GEMINI_MODEL", "gemini-3.1-pro-preview")
 DEFAULT_MAX_OUTPUT_TOKENS = 8192
 REQUIRED_SECTION_PREFIXES = [
     "# Paper Extraction Schema:",
