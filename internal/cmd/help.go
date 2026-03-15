@@ -88,6 +88,13 @@ func printGlobalHelp(w io.Writer, style helpStyler) {
 	_, _ = fmt.Fprintf(w, "  %s <id>\n", style("download"))
 	_, _ = fmt.Fprintf(w, "  %s diff|update\n", style("seen"))
 	_, _ = fmt.Fprintln(w)
+	_, _ = fmt.Fprintln(w, style("Examples:"))
+	_, _ = fmt.Fprintf(w, "  %s\n", style("papercli config init"))
+	_, _ = fmt.Fprintf(w, "  %s\n", style("papercli search \"vision transformer\" --provider arxiv --limit 5"))
+	_, _ = fmt.Fprintf(w, "  %s\n", style("papercli info 1706.03762 --provider arxiv --format md"))
+	_, _ = fmt.Fprintf(w, "  %s\n", style("papercli download 1706.03762 --provider arxiv --out attention-is-all-you-need.pdf"))
+	_, _ = fmt.Fprintf(w, "  %s\n", style("papercli seen diff --new latest.json --seen seen.json --out unseen.json --stats"))
+	_, _ = fmt.Fprintln(w)
 	_, _ = fmt.Fprintf(w, "Use '%s <command> %s' for command-specific options.\n", style("papercli"), style("--help"))
 }
 
