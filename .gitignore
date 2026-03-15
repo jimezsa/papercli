@@ -9,5 +9,7 @@
 *.out
 coverage.*
 
+.env.local
+
 # macOS
 .DS_Store
