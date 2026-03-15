@@ -48,6 +48,7 @@ curl -fsSL https://raw.githubusercontent.com/jimezsa/papercli/main/SKILLS/fast-s
 ## Mission
 
 Given a research question, use `papercli` to:
+
 1. Search relevant papers.
 2. Download a focused core set of PDFs.
 3. Read enough content to extract core ideas, concepts, and key equations.
@@ -167,6 +168,7 @@ python3 SKILLS/paper-summary/scripts/gemini_parallel_summary.py \
 ```
 
 Summary requirements:
+
 - Use the canonical schema in `SKILLS/paper-summary/references/summary_schema.md`.
 - Write each summary to `research/pdf/<safe_id>.md`, next to `research/pdf/<safe_id>.pdf`, unless an explicit output directory is needed.
 - Read the PDF directly so figures, captions, tables, equations, and page anchors remain first-class evidence.
@@ -190,20 +192,24 @@ Use this structure:
 # Findings: <topic>
 
 ## Scope
+
 - Question: ...
 - Coverage window: ...
 - Selection criteria: ...
 - Corpus stats: selected ..., downloaded ..., summarized ..., failure events ...
 
 ## Core Ideas
+
 Claim with inline refs [R1][R3].
 Claim with inline refs [R2].
 
 ## Key Concepts
+
 - Concept A: definition and role [R1].
 - Concept B: definition and trade-off [R2][R4].
 
 ## Key Math
+
 \[
 <equation>
 \]
@@ -215,23 +221,27 @@ Meaning and why it matters [R3].
 Meaning and assumptions [R2].
 
 ## Paper Notes
+
 ### [R1] <title>
+
 - Problem:
 - Method:
 - Main result:
 - Limits:
 
 ### [R2] <title>
+
 - Problem:
 - Method:
 - Main result:
 - Limits:
 
 ## References
-| Ref | Paper | Provider ID | Year | Evidence |
-|---|---|---|---|---|
-| R1 | Title... | arxiv:... | 2024 | `pdf/...md`, `pdf/...pdf` |
-| R2 | Title... | semantic:... | 2023 | `pdf/...md`, `pdf/...pdf` |
+
+| Ref | Paper    | Provider ID  | Year | Evidence                  |
+| --- | -------- | ------------ | ---- | ------------------------- |
+| R1  | Title... | arxiv:...    | 2024 | `pdf/...md`, `pdf/...pdf` |
+| R2  | Title... | semantic:... | 2023 | `pdf/...md`, `pdf/...pdf` |
 ```
 
 ## Referencing Rules
