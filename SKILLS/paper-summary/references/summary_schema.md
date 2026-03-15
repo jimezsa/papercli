@@ -16,32 +16,40 @@ Rules:
 - Evidence Anchors: Exact page, figure, table, or equation anchors supporting the problem framing.
 
 ## 2. Main Architecture (Mathematical Formalization)
-Agent instruction: Extract the core methodology and represent it strictly as a sequence of mathematical operations, data flows, and loss functions. Use standard LaTeX notation.
+Agent instruction: Extract the core methodology and represent it strictly as a sequence of mathematical operations, data flows, and loss functions. Write equations in Markdown using fenced `math` blocks so they remain readable in raw `.md` and machine-extractable.
 The main architecture can often be extracted directly from the architecture image or pipeline diagram in the paper.
 If the method is explained primarily through a figure or diagram, use the PDF figure as evidence and translate it into equations and ordered data flow.
 If the paper has no learnable architecture (for example a survey, benchmark, theorem, dataset, or systems paper), replace this section with `Algorithm / theorem / protocol flow` and formalize the central steps instead.
 Use `Loss / Optimization: Not applicable.` when no training objective exists.
+Formatting rules for this section:
+- Use a short label such as `Input`, `Forward Pass`, `Update Rule`, `Objective`, or `Algorithm Step k` before each math block.
+- Put each standalone equation or tightly related equation group in its own fenced `math` block.
+- Use inline math such as `$X$` only for short variable mentions inside sentences or bullets.
+- Prefer aligned multi-line math when the paper presents a sequence, derivation, or factorized objective.
+- Keep notation faithful to the paper; if you rename a symbol for clarity, say `Inference from available evidence: renamed ... for consistency.`.
+- Do not paste raw LaTeX delimiters like `\[` or `\]` directly into prose outside a fenced `math` block.
 
 Input:
-\[
+
+```math
 X = \text{...}
-\]
+```
 
 Forward Pass:
-\[
-H_1 = f_{\text{module\_1}}(X)
-\]
-\[
-H_2 = f_{\text{module\_2}}(H_1)
-\]
-\[
-\hat{Y} = f_{\text{head}}(H_2)
-\]
+
+```math
+\begin{aligned}
+H_1 &= f_{\text{module\_1}}(X) \\
+H_2 &= f_{\text{module\_2}}(H_1) \\
+\hat{Y} &= f_{\text{head}}(H_2)
+\end{aligned}
+```
 
 Loss / Optimization:
-\[
+
+```math
 \mathcal{L}_{\text{total}} = \lambda_1 \mathcal{L}_{\text{task}} + \lambda_2 \mathcal{L}_{\text{reg}}
-\]
+```
 
 Evidence Anchors: Exact figure, equation, algorithm, and page anchors used for this formalization.
 
@@ -71,7 +79,8 @@ If Section 2 is non-architectural, explain why each algorithmic step, theorem co
 
 Summary requirements:
 - Keep the section order unchanged.
-- Express the main method as LaTeX equations plus data flow and loss terms.
+- Express the main method as Markdown-native math: use fenced `math` blocks for standalone equations and inline math for short symbol references.
+- Structure Section 2 as labeled math steps so both humans and parsers can recover the input, transformations, and objective.
 - If no learnable architecture exists, switch Section 2 to `Algorithm / theorem / protocol flow` and write `Loss / Optimization: Not applicable.` instead of inventing modules.
 - Explain why each Section 2 variable, module, and loss term exists.
 - Preserve figure/table evidence when it carries the method, mechanism, or strongest empirical support.
