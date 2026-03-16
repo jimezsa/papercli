@@ -124,6 +124,13 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     load_env_local()
     args = parse_args()
+    jobs = build_jobs(args)
+    if not jobs:
+        print("No PDF files found to summarize.", file=sys.stderr)
+        return 1
+
+    print_detected_jobs(jobs, args.overwrite)
+
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         print(f"GEMINI_API_KEY is not set. Checked process environment and {ENV_LOCAL_PATH}.", file=sys.stderr)
@@ -137,11 +144,6 @@ def main() -> int:
 
     schema_path = SKILL_DIR / "references" / "summary_schema.md"
     schema_text = schema_path.read_text(encoding="utf-8").strip()
-
-    jobs = build_jobs(args)
-    if not jobs:
-        print("No PDF files found to summarize.", file=sys.stderr)
-        return 1
 
     for job in jobs:
         job.output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -237,6 +239,23 @@ def build_jobs(args: argparse.Namespace) -> list[Job]:
                 metadata_path = candidate
         jobs.append(Job(pdf_path=pdf_path, output_path=output_path, metadata_path=metadata_path))
     return jobs
+
+
+def print_detected_jobs(jobs: list[Job], overwrite: bool) -> None:
+    mode = "overwrite" if overwrite else "preserve-existing"
+    print(
+        f"Detected {len(jobs)} PDF(s) to summarize. Mode: {mode}.",
+        file=sys.stderr,
+    )
+    for index, job in enumerate(jobs, start=1):
+        metadata_state = str(job.metadata_path) if job.metadata_path is not None else "missing"
+        output_state = "exists" if job.output_path.exists() else "new"
+        print(
+            f"[{index}/{len(jobs)}] pdf={job.pdf_path} safe_id={job.safe_id}",
+            file=sys.stderr,
+        )
+        print(f"  output={job.output_path} ({output_state})", file=sys.stderr)
+        print(f"  metadata={metadata_state}", file=sys.stderr)
 
 
 def run_job(
