@@ -40,12 +40,6 @@ cp ./bin/papercli ./papercli
 ## Example usage
 
 ```bash
-# Initialize config
-./papercli config init
-
-# Overwrite existing config intentionally
-./papercli config init --force
-
 # Search papers
 ./papercli search "graph neural networks" --provider arxiv --limit 5
 
@@ -85,7 +79,6 @@ cp ./bin/papercli ./papercli
 | Command                                                                    | Description                                                           |
 | -------------------------------------------------------------------------- | --------------------------------------------------------------------- |
 | `papercli version`                                                         | Print CLI version.                                                    |
-| `papercli config init [--force]`                                           | Initialize default config file and print its path.                    |
 | `papercli config path`                                                     | Print config file path.                                               |
 | `papercli search <query>`                                                  | Search papers by query across one or more providers.                  |
 | `papercli author <name>`                                                   | Search papers by author name.                                         |
