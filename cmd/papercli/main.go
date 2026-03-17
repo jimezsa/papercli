@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
+	"strings"
 
 	"github.com/jimezsa/papercli/internal/cmd"
+	"github.com/jimezsa/papercli/internal/config"
 )
 
 var (
@@ -14,37 +17,54 @@ var (
 )
 
 func main() {
-	if len(os.Args) == 1 {
-		globals, _, _, _, _, _ := cmd.ParseGlobalArgs(nil)
-		_ = cmd.PrintHelp(os.Stdout, "", nil, globals)
-		return
+	if err := run(os.Args[1:], os.Stdout, os.Stderr); err != nil {
+		fatal(err)
+	}
+}
+
+func run(args []string, stdout, stderr io.Writer) error {
+	globals, showVersion, showHelp, command, commandArgs, err := cmd.ParseGlobalArgs(args)
+	if err != nil {
+		return err
+	}
+	if shouldAutoInitConfig(showVersion, showHelp, command, commandArgs) {
+		if _, err := config.EnsureFile(); err != nil {
+			return err
+		}
 	}
 
-	globals, showVersion, showHelp, command, args, err := cmd.ParseGlobalArgs(os.Args[1:])
-	if err != nil {
-		fatal(err)
+	if len(args) == 0 {
+		return cmd.PrintHelp(stdout, "", nil, globals)
 	}
 	if showVersion {
-		fmt.Println(buildVersion())
-		return
+		_, err := fmt.Fprintln(stdout, buildVersion())
+		return err
 	}
 	if showHelp {
-		if err := cmd.PrintHelp(os.Stdout, command, args, globals); err != nil {
-			fatal(err)
-		}
-		return
+		return cmd.PrintHelp(stdout, command, commandArgs, globals)
 	}
 
-	app, err := cmd.NewApp(buildVersion(), globals, os.Stdout, os.Stderr)
+	app, err := cmd.NewApp(buildVersion(), globals, stdout, stderr)
 	if err != nil {
-		fatal(err)
+		return err
 	}
 	if command == "" {
-		fatal(fmt.Errorf("missing command"))
+		return fmt.Errorf("missing command")
 	}
-	if err := cmd.Dispatch(app, command, args); err != nil {
-		fatal(err)
+	return cmd.Dispatch(app, command, commandArgs)
+}
+
+func shouldAutoInitConfig(showVersion, showHelp bool, command string, args []string) bool {
+	if showVersion || showHelp {
+		return false
 	}
+	if strings.EqualFold(strings.TrimSpace(command), "version") {
+		return false
+	}
+	if strings.EqualFold(strings.TrimSpace(command), "config") && len(args) > 0 {
+		return !strings.EqualFold(strings.TrimSpace(args[0]), "init")
+	}
+	return true
 }
 
 func fatal(err error) {

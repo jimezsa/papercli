@@ -5,6 +5,28 @@ import (
 	"testing"
 )
 
+func TestEnsureFileCreatesDefaultConfigOnce(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("XDG_CONFIG_HOME", "")
+
+	path, err := EnsureFile()
+	if err != nil {
+		t.Fatalf("EnsureFile() first run failed: %v", err)
+	}
+	if _, err := os.Stat(path); err != nil {
+		t.Fatalf("expected config file to exist at %q: %v", path, err)
+	}
+
+	pathAgain, err := EnsureFile()
+	if err != nil {
+		t.Fatalf("EnsureFile() second run failed: %v", err)
+	}
+	if pathAgain != path {
+		t.Fatalf("expected EnsureFile() to return %q, got %q", path, pathAgain)
+	}
+}
+
 func TestInitFileRequiresForceToOverwrite(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)

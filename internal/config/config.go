@@ -53,16 +53,35 @@ func CachePath() (string, error) {
 	return filepath.Join(dir, cacheFile), nil
 }
 
+func EnsureFile() (string, error) {
+	dir, err := Dir()
+	if err != nil {
+		return "", err
+	}
+	path := filepath.Join(dir, configFile)
+	if err := ensureDir(dir); err != nil {
+		return "", err
+	}
+	if _, err := os.Stat(path); err == nil {
+		return path, nil
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return "", fmt.Errorf("stat config %q: %w", path, err)
+	}
+	if err := writeConfig(path, Default()); err != nil {
+		return "", err
+	}
+	return path, nil
+}
+
 func InitFile(force bool) (string, error) {
 	dir, err := Dir()
 	if err != nil {
 		return "", err
 	}
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return "", fmt.Errorf("create config dir: %w", err)
-	}
-
 	path := filepath.Join(dir, configFile)
+	if err := ensureDir(dir); err != nil {
+		return "", err
+	}
 	if !force {
 		if _, err := os.Stat(path); err == nil {
 			return "", fmt.Errorf("config already exists at %q (use --force to overwrite)", path)
@@ -71,15 +90,8 @@ func InitFile(force bool) (string, error) {
 		}
 	}
 
-	cfg := Default()
-
-	data, err := json.MarshalIndent(cfg, "", "  ")
-	if err != nil {
-		return "", fmt.Errorf("encode config: %w", err)
-	}
-
-	if err := os.WriteFile(path, append(data, '\n'), 0o644); err != nil {
-		return "", fmt.Errorf("write config: %w", err)
+	if err := writeConfig(path, Default()); err != nil {
+		return "", err
 	}
 	return path, nil
 }
@@ -131,4 +143,22 @@ func applyEnvOverrides(cfg *Config) {
 			cfg.DefaultLimit = n
 		}
 	}
+}
+
+func ensureDir(dir string) error {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return fmt.Errorf("create config dir: %w", err)
+	}
+	return nil
+}
+
+func writeConfig(path string, cfg Config) error {
+	data, err := json.MarshalIndent(cfg, "", "  ")
+	if err != nil {
+		return fmt.Errorf("encode config: %w", err)
+	}
+	if err := os.WriteFile(path, append(data, '\n'), 0o644); err != nil {
+		return fmt.Errorf("write config: %w", err)
+	}
+	return nil
 }
