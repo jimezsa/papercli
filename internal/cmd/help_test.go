@@ -15,7 +15,6 @@ func TestPrintHelp_GlobalIncludesExamples(t *testing.T) {
 	output := buf.String()
 	expected := []string{
 		"Examples:",
-		"papercli config init",
 		"papercli search \"vision transformer\" --provider arxiv --limit 5",
 		"papercli info 1706.03762 --provider arxiv --format md",
 		"papercli download 1706.03762 --provider arxiv --out attention-is-all-you-need.pdf",
@@ -26,5 +25,8 @@ func TestPrintHelp_GlobalIncludesExamples(t *testing.T) {
 		if !strings.Contains(output, want) {
 			t.Fatalf("expected help output to contain %q\noutput:\n%s", want, output)
 		}
+	}
+	if strings.Contains(output, "papercli config init") {
+		t.Fatalf("expected help output to omit removed config init example\noutput:\n%s", output)
 	}
 }
