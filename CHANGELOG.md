@@ -4,7 +4,8 @@
 
 ### Added
 
-- Added concrete terminal usage examples to `papercli` global help output and `papercli --help`
+- Added automatic first-run config initialization so `papercli` creates its default config file without requiring a separate `papercli config init`
+- Added CLI usage examples to the built-in `papercli` help output, including `papercli --help`
 - Added the `paper-summary` skill workflow with a default parallel summary count of 20
 - Added rigorous mathematical formalization guidance to the `paper-summary` schema, including Markdown math formatting and explicit use of PDF figures and architecture diagrams as evidence
 - Added local `.env.local` loading support to the `paper-summary` Gemini script
