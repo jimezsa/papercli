@@ -182,6 +182,7 @@ Target quality: fast but technically useful.
 - Include 3-6 referenced papers.
 - Provide a compact synthesis of core ideas.
 - Include at least 2 key equations from the corpus when available.
+- Write math in plain-text markdown, not LaTeX blocks, so the file reads cleanly in raw form and can be parsed by downstream tools.
 - Use the per-paper schemas in `research/pdf/` as the primary synthesis substrate.
 
 ## Output Contract (`findings.md`)
@@ -210,14 +211,12 @@ Claim with inline refs [R2].
 
 ## Key Math
 
-\[
-<equation>
-\]
+Equation: <name> = <plain-text formula> [R3]
+Where: <symbol> = <meaning>; ...
 Meaning and why it matters [R3].
 
-\[
-<equation>
-\]
+Equation: <name> = <plain-text formula> [R2]
+Where: <symbol> = <meaning>; ...
 Meaning and assumptions [R2].
 
 ## Paper Notes

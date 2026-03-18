@@ -205,17 +205,21 @@ Then analyze:
 ## Key Math Protocol
 
 - Extract 5+ important equations across the corpus when available.
-- Render equations in LaTeX.
+- Write equations in plain-text markdown, not LaTeX blocks.
+- Prefer ASCII-friendly math so the output stays readable in raw markdown and easy to parse by tools.
+- Use a consistent three-line pattern:
+  - `Equation: <name> = <plain-text formula> [R#]`
+  - `Where: <symbol> = <meaning>; ...`
+  - `Interpretation: <what the equation does, why it matters, and any assumptions> [R#]`
 - Explain each equation in domain terms, not only symbol definitions.
 - Attach at least one citation per equation explanation.
 
 Example:
 
 ```markdown
-\[
-\mathrm{ELBO} = \mathbb{E}_{q_\phi(z \mid x)}[\log p_\theta(x \mid z)] - D*{KL}(q*\phi(z \mid x)\|p(z))
-\]
-This objective trades reconstruction fidelity against posterior regularization, directly affecting representation quality and generative calibration [R5].
+Equation: ELBO = E_q_phi(z | x)[log p_theta(x | z)] - KL(q_phi(z | x) || p(z)) [R5]
+Where: x = observed input; z = latent variable; q_phi = approximate posterior; p_theta = decoder; KL = Kullback-Leibler divergence.
+Interpretation: This objective trades reconstruction fidelity against posterior regularization, which shapes representation quality and generative calibration [R5].
 ```
 
 ## Output Contract (`findings.md`)
@@ -253,9 +257,8 @@ Deep synthesis paragraphs with inline refs [R#].
 
 ## Key Math and Mechanisms
 
-\[
-...
-\]
+Equation: <name> = <plain-text formula> [R#]
+Where: <symbol> = <meaning>; ...
 Interpretation and implications [R#].
 
 ## Agreements, Conflicts, and Uncertainty
@@ -290,7 +293,7 @@ Before finalizing `findings.md`, verify:
 
 1. All major sections are present.
 2. Every analytical claim has citations.
-3. Math section includes equations plus interpretation.
+3. Math section uses plain-text equations plus interpretation.
 4. Conflicting evidence is surfaced, not hidden.
 5. References map to real downloaded/local files.
 6. Each deep-read paper has an agent-ready summary in `research/pdf/` unless extraction failed.

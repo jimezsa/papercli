@@ -181,17 +181,21 @@ Then produce:
 ## Key Math Handling
 
 - Extract at least 3 high-signal equations across the corpus when available.
-- Render equations in LaTeX blocks.
+- Write equations in plain-text markdown, not LaTeX blocks.
+- Prefer ASCII-friendly notation that survives raw markdown: use forms like `sum_{i=1 to N}`, `E[...]`, `argmax`, `<=`, `>=`, and `^`.
+- Use a consistent three-line pattern:
+  - `Equation: <name> = <plain-text formula> [R#]`
+  - `Where: <symbol> = <meaning>; ...`
+  - `Interpretation: <role, assumptions, and trade-offs> [R#]`
 - Explain variable meanings and assumptions.
 - Tie each equation to a paper reference on the same line.
 
 Example style:
 
 ```markdown
-\[
-\mathcal{L}(\theta) = \sum*{i=1}^{N} \ell(f*\theta(x_i), y_i) + \lambda \Omega(\theta)
-\]
-Regularized empirical risk objective balancing fit and complexity [R4].
+Equation: L(theta) = sum_{i=1 to N} ell(f_theta(x_i), y_i) + lambda * Omega(theta) [R4]
+Where: f_theta = model with parameters theta; ell = per-example loss; Omega(theta) = regularizer; lambda = regularization weight.
+Interpretation: Regularized empirical risk objective balancing data fit against model complexity [R4].
 ```
 
 ## Output Contract (`findings.md`)
@@ -226,9 +230,8 @@ Paragraph-level synthesis with inline refs [R1][R2].
 
 ## Key Math
 
-\[
-...
-\]
+Equation: <name> = <plain-text formula> [R#]
+Where: <symbol> = <meaning>; ...
 Interpretation [R3].
 
 ## Agreements and Conflicts
