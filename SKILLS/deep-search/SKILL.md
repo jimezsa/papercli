@@ -72,8 +72,8 @@ Deliver an institutional-grade `findings.md` by:
 
 ## Recommended Corpus Size
 
-- Candidate set: 30-60 papers.
-- Deep-read set: 12-20 papers.
+- Candidate set: 50-100 papers.
+- Deep-read set: 40-60 papers.
 - If access constraints reduce coverage, document the shortfall in the report.
 
 ## End-to-End Workflow
@@ -164,7 +164,7 @@ python3 SKILLS/paper-summary/scripts/gemini_parallel_summary.py \
   --metadata-dir research/meta \
   --summarized-ids research/meta/summarized_ids.txt \
   --failures-tsv research/meta/failures.tsv \
-  --concurrency 4
+  --concurrency 20
 ```
 
 Retry one paper with:

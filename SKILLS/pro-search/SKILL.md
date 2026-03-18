@@ -143,7 +143,7 @@ python3 SKILLS/paper-summary/scripts/gemini_parallel_summary.py \
   --metadata-dir research/meta \
   --summarized-ids research/meta/summarized_ids.txt \
   --failures-tsv research/meta/failures.tsv \
-  --concurrency 4
+  --concurrency 10
 ```
 
 Retry one paper with:
