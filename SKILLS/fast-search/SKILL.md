@@ -54,6 +54,19 @@ Given a research question, use `papercli` to:
 3. Read enough content to extract core ideas, concepts, and key equations.
 4. Produce a detailed `findings.md` report with inline references tied to exact papers.
 
+## OpenColab Progress Helper
+
+When running inside OpenColab and `OPENCOLAB_PROGRESS_FILE` is available, use this helper:
+
+```bash
+emit_progress() {
+  if [ -z "${OPENCOLAB_PROGRESS_FILE:-}" ]; then
+    return 0
+  fi
+  printf '%s\n' "$1" >> "$OPENCOLAB_PROGRESS_FILE"
+}
+```
+
 ## Prerequisites
 
 - `papercli` is installed and available in `PATH`.

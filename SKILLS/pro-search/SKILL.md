@@ -70,6 +70,19 @@ Answer a scientific question by building a medium-depth evidence base from paper
 - Every analytical paragraph must contain `[R#]` citations.
 - Final deliverable is a detailed markdown file named `findings.md`.
 
+## OpenColab Progress Helper
+
+When running inside OpenColab and `OPENCOLAB_PROGRESS_FILE` is available, use this helper:
+
+```bash
+emit_progress() {
+  if [ -z "${OPENCOLAB_PROGRESS_FILE:-}" ]; then
+    return 0
+  fi
+  printf '%s\n' "$1" >> "$OPENCOLAB_PROGRESS_FILE"
+}
+```
+
 ## Workflow
 
 ### 1. Define research frame
@@ -193,7 +206,7 @@ Then produce:
 Example style:
 
 ```markdown
-Equation: L(theta) = sum_{i=1 to N} ell(f_theta(x_i), y_i) + lambda * Omega(theta) [R4]
+Equation: L(theta) = sum\_{i=1 to N} ell(f_theta(x_i), y_i) + lambda \* Omega(theta) [R4]
 Where: f_theta = model with parameters theta; ell = per-example loss; Omega(theta) = regularizer; lambda = regularization weight.
 Interpretation: Regularized empirical risk objective balancing data fit against model complexity [R4].
 ```

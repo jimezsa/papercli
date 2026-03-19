@@ -70,6 +70,19 @@ Deliver an institutional-grade `findings.md` by:
 - Surface conflicts and uncertainty explicitly.
 - Final output must be a detailed markdown file named `findings.md`.
 
+## OpenColab Progress Helper
+
+When running inside OpenColab and `OPENCOLAB_PROGRESS_FILE` is available, use this helper:
+
+```bash
+emit_progress() {
+  if [ -z "${OPENCOLAB_PROGRESS_FILE:-}" ]; then
+    return 0
+  fi
+  printf '%s\n' "$1" >> "$OPENCOLAB_PROGRESS_FILE"
+}
+```
+
 ## Recommended Corpus Size
 
 - Candidate set: 50-100 papers.
