@@ -83,6 +83,8 @@ emit_progress() {
 }
 ```
 
+Use it only for substantial milestones: retrieval-wave start, candidate-corpus counts, deep-read selection, download progress, summarization progress, synthesis start, warnings, or blocked runs.
+
 ## Workflow
 
 ### 1. Define research frame
